@@ -24,4 +24,5 @@ HEADERS  += mainwindow.h \
 FORMS    += mainwindow.ui
 
 OTHER_FILES += \
-    stylesheet.qss
+    stylesheet.qss \
+    Readme.txt
