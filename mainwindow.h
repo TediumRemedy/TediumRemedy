@@ -25,6 +25,13 @@ public slots:
 
 private:
     Stranger *stranger;
+
+private slots:
+    void ReceivedMessage(const QString &messageText);
+    void StrangerDisconnected();
+    void StrangerConnected();
+    void StrangerStartsTyping();
+    void StrangerStopsTyping();
 };
 
 #endif // MAINWINDOW_H

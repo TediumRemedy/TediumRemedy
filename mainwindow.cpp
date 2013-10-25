@@ -20,18 +20,44 @@ MainWindow::MainWindow(QWidget *parent) :
     QObject::connect(ui->textBrowser_2, SIGNAL(escapePressed()), this, SLOT(escapePressed()));
 
     stranger = new Stranger(this);
+
+    QObject::connect(stranger, SIGNAL(ReceivedMessage(const QString &)), this, SLOT(ReceivedMessage(const QString &)));
+    QObject::connect(stranger, SIGNAL(StrangerDisconnected()), this, SLOT(StrangerDisconnected()));
+    QObject::connect(stranger, SIGNAL(ConversationStarted()), this, SLOT(StrangerConnected()));
+    QObject::connect(stranger, SIGNAL(StrangerStartsTyping()), this, SLOT(StrangerStartsTyping()));
+    QObject::connect(stranger, SIGNAL(StrangerStopsTyping()), this, SLOT(StrangerStopsTyping()));
+
 }
 
 void MainWindow::enterPressed() {
-    ui->textBrowser->append(ui->textBrowser_2->toPlainText());
+    QString messageText = ui->textBrowser_2->toPlainText();
+    ui->textBrowser->append("You: "+messageText);
     ui->textBrowser_2->clear();
+    stranger->SendMessage(messageText);
 }
 
 void MainWindow::escapePressed() {
     stranger->StartConversation();
+}
 
-    //ui->textBrowser->append(ui->textBrowser_2->toPlainText());
-    //ui->textBrowser_2->clear();
+void MainWindow::ReceivedMessage(const QString &messageText) {
+    ui->textBrowser->append("Stranger: "+messageText);
+}
+
+void MainWindow::StrangerDisconnected() {
+    ui->textBrowser->append("Stranger disconnected");
+}
+
+void MainWindow::StrangerConnected() {
+    ui->textBrowser->append("Stranger connected");
+}
+
+void MainWindow::StrangerStartsTyping() {
+    ui->textBrowser->append("Stranger typing");
+}
+
+void MainWindow::StrangerStopsTyping() {
+    ui->textBrowser->append("Stranger stopped typing");
 }
 
 MainWindow::~MainWindow()
