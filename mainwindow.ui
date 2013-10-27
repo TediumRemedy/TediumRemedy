@@ -18,10 +18,10 @@
     <item>
      <layout class="QVBoxLayout" name="verticalLayout">
       <item>
-       <widget class="QTextBrowser" name="textBrowser"/>
+       <widget class="QTextBrowser" name="chatlogBox"/>
       </item>
       <item>
-       <widget class="TypingBox" name="textBrowser_2">
+       <widget class="TypingBox" name="typingBox" native="true">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
           <horstretch>0</horstretch>
@@ -40,7 +40,7 @@
           <height>50</height>
          </size>
         </property>
-        <property name="readOnly">
+        <property name="readOnly" stdset="0">
          <bool>false</bool>
         </property>
        </widget>
@@ -70,6 +70,13 @@
   <widget class="QStatusBar" name="statusBar"/>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
+ <customwidgets>
+  <customwidget>
+   <class>TypingBox</class>
+   <extends>QWidget</extends>
+   <header>typingbox.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

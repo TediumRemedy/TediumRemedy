@@ -26,6 +26,9 @@ public slots:
 private:
     Stranger *stranger;
 
+protected:
+    void keyPressEvent(QKeyEvent *event);
+
 private slots:
     void ReceivedMessage(const QString &messageText);
     void StrangerDisconnected();

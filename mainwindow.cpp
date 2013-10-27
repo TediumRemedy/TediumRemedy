@@ -2,6 +2,7 @@
 #include "ui_mainwindow.h"
 #include <QFile>
 #include <QDesktopWidget>
+#include <QDebug>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -16,8 +17,8 @@ MainWindow::MainWindow(QWidget *parent) :
     setStyleSheet(stylesheetString);
 
     setGeometry(QStyle::alignedRect(Qt::LeftToRight, Qt::AlignCenter, size(), qApp->desktop()->availableGeometry()));
-    QObject::connect(ui->textBrowser_2, SIGNAL(enterPressed()), this, SLOT(enterPressed()));
-    QObject::connect(ui->textBrowser_2, SIGNAL(escapePressed()), this, SLOT(escapePressed()));
+    QObject::connect(ui->typingBox, SIGNAL(enterPressed()), this, SLOT(enterPressed()));
+    QObject::connect(ui->typingBox, SIGNAL(escapePressed()), this, SLOT(escapePressed()));
 
     stranger = new Stranger(this);
 
@@ -27,40 +28,59 @@ MainWindow::MainWindow(QWidget *parent) :
     QObject::connect(stranger, SIGNAL(StrangerStartsTyping()), this, SLOT(StrangerStartsTyping()));
     QObject::connect(stranger, SIGNAL(StrangerStopsTyping()), this, SLOT(StrangerStopsTyping()));
 
+
+    stranger->StartConversation();
+
 }
 
 void MainWindow::enterPressed() {
-    QString messageText = ui->textBrowser_2->toPlainText();
-    ui->textBrowser->append("You: "+messageText);
-    ui->textBrowser_2->clear();
+    QString messageText = ui->typingBox->toPlainText();
+    ui->chatlogBox->append("You: "+messageText);
+    ui->typingBox->clear();
     stranger->SendMessage(messageText);
 }
 
 void MainWindow::escapePressed() {
+    ui->chatlogBox->clear();
     stranger->StartConversation();
 }
 
 void MainWindow::ReceivedMessage(const QString &messageText) {
-    ui->textBrowser->append("Stranger: "+messageText);
+    ui->chatlogBox->append("Stranger: "+messageText);
 }
 
 void MainWindow::StrangerDisconnected() {
-    ui->textBrowser->append("Stranger disconnected");
+    ui->chatlogBox->append("Stranger disconnected");
 }
 
 void MainWindow::StrangerConnected() {
-    ui->textBrowser->append("Stranger connected");
+
+    ui->chatlogBox->append("Stranger connected");
 }
 
 void MainWindow::StrangerStartsTyping() {
-    ui->textBrowser->append("Stranger typing");
+    ui->chatlogBox->append("Stranger typing");
 }
 
 void MainWindow::StrangerStopsTyping() {
-    ui->textBrowser->append("Stranger stopped typing");
+    ui->chatlogBox->append("Stranger stopped typing");
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;
+}
+
+void MainWindow::keyPressEvent(QKeyEvent *event)
+{
+    QWidget *focusedWidget = QApplication::focusWidget();
+    //let's not redirect Control/Alt modified key presses to the typing box (Ctrl+C for ex)
+    if(focusedWidget != ui->typingBox && !(event->modifiers() & (Qt::ControlModifier | Qt::AltModifier | Qt::MetaModifier))) {
+        ui->typingBox->setFocus();
+        QKeyEvent *eventDuplicate = new QKeyEvent(event->type(), event->key(), event->modifiers(), event->text(), false, event->count());
+        QCoreApplication::postEvent(ui->typingBox, eventDuplicate);
+    }
+    //event->key();
+    qDebug() << "Inside MyWindow keypress";
+
 }

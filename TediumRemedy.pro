@@ -15,11 +15,13 @@ TEMPLATE = app
 SOURCES += main.cpp\
         mainwindow.cpp \
     typingbox.cpp \
-    stranger.cpp
+    stranger.cpp \
+    spy.cpp
 
 HEADERS  += mainwindow.h \
     typingbox.h \
-    stranger.h
+    stranger.h \
+    spy.h
 
 FORMS    += mainwindow.ui
 

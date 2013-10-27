@@ -14,7 +14,7 @@ Stranger::Stranger(QObject *parent) :
 void Stranger::StartConversation() {
     EndConversation();
 
-    QUrl requestUrl("http://front2.omegle.com/start?rcs=1&firstevents=1&spid=&randid=MG6PZ6ZP&lang=fr");
+    QUrl requestUrl("http://front2.omegle.com/start?rcs=1&firstevents=1&spid=&randid=MG6PZ6ZP&lang=en");
     const QNetworkRequest request(requestUrl);
     const QByteArray data;
     QNetworkReply *reply = nam->post(request, data);
