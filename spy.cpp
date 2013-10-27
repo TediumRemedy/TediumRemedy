@@ -11,7 +11,7 @@ Spy::Spy(QObject *parent) :
     QObject::connect(nam, SIGNAL(finished(QNetworkReply*)), this, SLOT(urlRequestFinished(QNetworkReply*)));
 }
 
-void Spy::StartConversation(QString &questionToDiscuss) {
+void Spy::StartConversation(QString questionToDiscuss) {
     EndConversation();
 
     QUrl requestUrl("http://front7.omegle.com/start?rcs=1&firstevents=1&spid=&randid=HNMESDAE&ask="+questionToDiscuss+"&lang=en");

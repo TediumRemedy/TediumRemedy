@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include "stranger.h"
+#include "spy.h"
 
 namespace Ui {
 class MainWindow;
@@ -25,6 +26,7 @@ public slots:
 
 private:
     Stranger *stranger;
+    Spy *spy;
 
 protected:
     void keyPressEvent(QKeyEvent *event);
@@ -35,6 +37,15 @@ private slots:
     void StrangerConnected();
     void StrangerStartsTyping();
     void StrangerStopsTyping();
+
+    //spy
+    void SpymodeReceivedMessage(const QString &strangerID, const QString &messageText);
+    void SpymodeStrangerDisconnected(const QString &strangerID);
+    void SpymodeStrangersConnected();
+    void SpymodeStrangerStartsTyping(const QString &strangerID);
+    void SpymodeStrangerStopsTyping(const QString &strangerID);
+
+
 };
 
 #endif // MAINWINDOW_H

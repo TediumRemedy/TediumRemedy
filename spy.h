@@ -22,7 +22,7 @@ signals:
     void StrangerDisconnected(const QString &strangerID);
 
 public slots:
-    void StartConversation(QString &questionToDiscuss);
+    void StartConversation(QString questionToDiscuss);
     void EndConversation();
 
 private:

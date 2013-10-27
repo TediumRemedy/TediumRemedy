@@ -21,6 +21,7 @@ MainWindow::MainWindow(QWidget *parent) :
     QObject::connect(ui->typingBox, SIGNAL(escapePressed()), this, SLOT(escapePressed()));
 
     stranger = new Stranger(this);
+    spy = new Spy(this);
 
     QObject::connect(stranger, SIGNAL(ReceivedMessage(const QString &)), this, SLOT(ReceivedMessage(const QString &)));
     QObject::connect(stranger, SIGNAL(StrangerDisconnected()), this, SLOT(StrangerDisconnected()));
@@ -28,9 +29,15 @@ MainWindow::MainWindow(QWidget *parent) :
     QObject::connect(stranger, SIGNAL(StrangerStartsTyping()), this, SLOT(StrangerStartsTyping()));
     QObject::connect(stranger, SIGNAL(StrangerStopsTyping()), this, SLOT(StrangerStopsTyping()));
 
+    QObject::connect(spy, SIGNAL(ReceivedMessage(const QString &,const QString &)), this, SLOT(SpymodeReceivedMessage(const QString &,const QString &)));
+    QObject::connect(spy, SIGNAL(StrangerDisconnected(const QString &)), this, SLOT(SpymodeStrangerDisconnected(const QString &)));
+    QObject::connect(spy, SIGNAL(ConversationStarted()), this, SLOT(SpymodeStrangersConnected()));
+    QObject::connect(spy, SIGNAL(StrangerStartsTyping()), this, SLOT(SpymodeStrangerStartsTyping(const QString &)));
+    QObject::connect(spy, SIGNAL(StrangerStopsTyping()), this, SLOT(SpymodeStrangerStopsTyping(const QString &)));
 
-    stranger->StartConversation();
 
+    //stranger->StartConversation();
+    spy->StartConversation("I don't like you");
 }
 
 void MainWindow::enterPressed() {
@@ -42,7 +49,8 @@ void MainWindow::enterPressed() {
 
 void MainWindow::escapePressed() {
     ui->chatlogBox->clear();
-    stranger->StartConversation();
+    spy->StartConversation("grrrrrrrrrrrrrrrrrr");
+    //stranger->StartConversation();
 }
 
 void MainWindow::ReceivedMessage(const QString &messageText) {
@@ -82,5 +90,27 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
     }
     //event->key();
     qDebug() << "Inside MyWindow keypress";
+
+}
+
+//spy mode
+
+void MainWindow::SpymodeReceivedMessage(const QString &strangerID, const QString &messageText){
+    ui->chatlogBox->append(strangerID+": "+messageText);
+}
+
+void MainWindow::SpymodeStrangerDisconnected(const QString &strangerID) {
+    ui->chatlogBox->append(strangerID+" disconnected");
+}
+
+void MainWindow::SpymodeStrangersConnected() {
+    ui->chatlogBox->append("Conversation started");
+}
+
+void MainWindow::SpymodeStrangerStartsTyping(const QString &strangerID) {
+    ui->chatlogBox->append(strangerID+" types");
+}
+
+void MainWindow::SpymodeStrangerStopsTyping(const QString &strangerID) {
 
 }
