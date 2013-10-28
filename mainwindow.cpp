@@ -36,8 +36,8 @@ MainWindow::MainWindow(QWidget *parent) :
     QObject::connect(spy, SIGNAL(StrangerStopsTyping()), this, SLOT(SpymodeStrangerStopsTyping(const QString &)));
 
 
-    //stranger->StartConversation();
-    spy->StartConversation("I don't like you");
+    stranger->StartConversation("fr", "");
+    //spy->StartConversation("This is a test question");
 }
 
 void MainWindow::enterPressed() {
@@ -49,8 +49,8 @@ void MainWindow::enterPressed() {
 
 void MainWindow::escapePressed() {
     ui->chatlogBox->clear();
-    spy->StartConversation("grrrrrrrrrrrrrrrrrr");
-    //stranger->StartConversation();
+    //spy->StartConversation(ui->typingBox->toPlainText());
+    stranger->StartConversation("en", "");
 }
 
 void MainWindow::ReceivedMessage(const QString &messageText) {

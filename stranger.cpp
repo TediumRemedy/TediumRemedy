@@ -11,10 +11,17 @@ Stranger::Stranger(QObject *parent) :
     QObject::connect(nam, SIGNAL(finished(QNetworkReply*)), this, SLOT(urlRequestFinished(QNetworkReply*)));
 }
 
-void Stranger::StartConversation() {
+void Stranger::StartConversation(const QString language, const QString topics) {
     EndConversation();
 
-    QUrl requestUrl("http://front2.omegle.com/start?rcs=1&firstevents=1&spid=&randid=MG6PZ6ZP&lang=en");
+    //QString language="en";
+    QString requestUrlString = "http://front2.omegle.com/start?rcs=1&firstevents=1&spid=&randid=MG6PZ6ZP&lang="+
+            language;
+    //QString topics="\"games\",\"music\"";
+    if(!topics.isEmpty())
+        requestUrlString+="&topics="+QUrl::toPercentEncoding("["+topics+"]");
+
+    QUrl requestUrl(requestUrlString);
     const QNetworkRequest request(requestUrl);
     const QByteArray data;
     QNetworkReply *reply = nam->post(request, data);
