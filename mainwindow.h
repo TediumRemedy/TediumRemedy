@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include "stranger.h"
 #include "spy.h"
+#include <QtMultimedia/QSoundEffect>
 
 namespace Ui {
 class MainWindow;
@@ -27,6 +28,7 @@ public slots:
 private:
     Stranger *stranger;
     Spy *spy;
+    QSoundEffect *incomingMessageSound;
 
 protected:
     void keyPressEvent(QKeyEvent *event);
@@ -35,6 +37,7 @@ private slots:
     void ReceivedMessage(const QString &messageText);
     void StrangerDisconnected();
     void StrangerConnected();
+    void StrangerConnectedWithQuestion(QString questionText);
     void StrangerStartsTyping();
     void StrangerStopsTyping();
 
@@ -45,6 +48,8 @@ private slots:
     void SpymodeStrangerStartsTyping(const QString &strangerID);
     void SpymodeStrangerStopsTyping(const QString &strangerID);
 
+private:
+    void PlaySoundFile(QString filename);
 
 };
 

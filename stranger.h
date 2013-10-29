@@ -16,13 +16,14 @@ public:
 
 signals:
     void ConversationStarted();
+    void ConversationStartedWithQuestion(QString questionText);
     void ReceivedMessage(const QString &messageText);
     void StrangerStartsTyping();
     void StrangerStopsTyping();
     void StrangerDisconnected();
 
 public slots:
-    void StartConversation(const QString language, const QString topics);
+    void StartConversation(const QString language, const QString topics, const bool wantSpy = false);
     void EndConversation();
     void SendMessage(QString &messageText);
     void StartTyping();
@@ -30,7 +31,7 @@ public slots:
 
 private:
     void pollNewEvents();
-    bool processEvent(QJsonArray &commandWithArgs); //returns false if the conversation has ended
+    bool processEvent(QJsonArray eventArray); //returns false if the conversation has ended
 
     QNetworkAccessManager *nam;
     QString clientID;

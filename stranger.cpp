@@ -11,7 +11,7 @@ Stranger::Stranger(QObject *parent) :
     QObject::connect(nam, SIGNAL(finished(QNetworkReply*)), this, SLOT(urlRequestFinished(QNetworkReply*)));
 }
 
-void Stranger::StartConversation(const QString language, const QString topics) {
+void Stranger::StartConversation(const QString language, const QString topics, const bool wantSpy) {
     EndConversation();
 
     //QString language="en";
@@ -20,6 +20,9 @@ void Stranger::StartConversation(const QString language, const QString topics) {
     //QString topics="\"games\",\"music\"";
     if(!topics.isEmpty())
         requestUrlString+="&topics="+QUrl::toPercentEncoding("["+topics+"]");
+
+    if(wantSpy)
+        requestUrlString+="&wantsspy=1";
 
     QUrl requestUrl(requestUrlString);
     const QNetworkRequest request(requestUrl);
@@ -80,7 +83,7 @@ void Stranger::urlRequestFinished(QNetworkReply *reply) {
         if(document.array()[0].isArray()) {
             QJsonArray commandWithArgs = document.array()[0].toArray();
             if(!commandWithArgs.isEmpty()) {
-                if(processEvent(commandWithArgs))
+                if(processEvent(document.array()))
                     pollNewEvents();
             }
         }
@@ -94,20 +97,23 @@ void Stranger::pollNewEvents() {
     QNetworkReply *reply = nam->post(request, data);
 }
 
-bool Stranger::processEvent(QJsonArray &commandWithArgs) {
-    QString eventName = commandWithArgs[0].toString();\
+bool Stranger::processEvent(QJsonArray eventArray) {
+    QString eventName = eventArray[0].toArray()[0].toString();\
     if(eventName == "strangerDisconnected") {
         emit StrangerDisconnected();
         return false;
     } else if(eventName == "gotMessage") {
-        const QString messageText = commandWithArgs[1].toString();
+        const QString messageText = eventArray[0].toArray()[1].toString();
         emit ReceivedMessage(messageText);
     } else if(eventName == "typing") {
         emit StrangerStartsTyping();
     } else if(eventName == "stoppedTyping") {
         emit StrangerStopsTyping();
     } else if(eventName == "connected") {
-        emit ConversationStarted();
+        if(eventArray[1].isArray() && eventArray[1].toArray()[0].toString() == "question")
+            emit ConversationStartedWithQuestion(eventArray[1].toArray()[1].toString());
+        else
+            emit ConversationStarted();
     }
     return true;
 }
