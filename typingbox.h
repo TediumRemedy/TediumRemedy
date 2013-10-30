@@ -16,6 +16,7 @@ public:
 signals:
     void enterPressed();
     void escapePressed();
+    void SwitchMode();
 public slots:
 
 };

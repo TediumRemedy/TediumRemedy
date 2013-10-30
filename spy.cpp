@@ -43,7 +43,7 @@ void Spy::urlRequestFinished(QNetworkReply *reply) {
         if(document.array()[0].isArray()) {
             QJsonArray commandWithArgs = document.array()[0].toArray();
             if(!commandWithArgs.isEmpty()) {
-                if(processEvent(commandWithArgs))
+                if(processEvent(document.array()))
                     pollNewEvents();
             }
         }
@@ -57,25 +57,26 @@ void Spy::pollNewEvents() {
     QNetworkReply *reply = nam->post(request, data);
 }
 
-bool Spy::processEvent(QJsonArray &commandWithArgs) {
-    QString eventName = commandWithArgs[0].toString();
+bool Spy::processEvent(QJsonArray eventArray) {
+    QString eventName = eventArray[0].toArray()[0].toString();
     if(eventName == "spyDisconnected") {
-        const QString strangerID = commandWithArgs[1].toString();
+        const QString strangerID = eventArray[0].toArray()[1].toString();
         emit StrangerDisconnected(strangerID);
         return false;
     } else if(eventName == "spyMessage") {
-        const QString strangerID = commandWithArgs[1].toString();
-        const QString messageText = commandWithArgs[2].toString();
+        const QString strangerID = eventArray[0].toArray()[1].toString();
+        const QString messageText = eventArray[0].toArray()[2].toString();
         emit ReceivedMessage(strangerID, messageText);
     } else if(eventName == "spyTyping") {
-        const QString strangerID = commandWithArgs[1].toString();
+        const QString strangerID = eventArray[0].toArray()[1].toString();
         emit StrangerStartsTyping(strangerID);
     } else if(eventName == "spyStoppedTyping") {
-        const QString strangerID = commandWithArgs[1].toString();
+        const QString strangerID = eventArray[0].toArray()[1].toString();
         emit StrangerStopsTyping(strangerID);
     } else if(eventName == "connected") {
-        //const QString questionText = commandWithArgs[0].toString();;
-        emit ConversationStarted();
+        const QString questionText = eventArray[0].toArray()[0].toString();
+        if(eventArray[1].isArray() && eventArray[1].toArray()[0].toString() == "question")
+            emit ConversationStartedWithQuestion(eventArray[1].toArray()[1].toString());
     }
     return true;
 }

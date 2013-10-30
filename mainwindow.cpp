@@ -4,7 +4,7 @@
 #include <QDesktopWidget>
 #include <QDebug>
 #include <QtMultimedia/QSoundEffect>
-
+#include <QLabel>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -15,12 +15,35 @@ MainWindow::MainWindow(QWidget *parent) :
     if(!stylesheetFile.open(QFile::ReadOnly)) {
 
     }
+
+    QStatusBar *sb = this->statusBar();
+
+    chatModeLabel = new QLabel(this);
+    //chatModeLabel->setText("R");
+    sb->addPermanentWidget(chatModeLabel);
+
+
+    /*QImage typingImagePng("/home/mike/TediumRemedy/typing.png");
+    typingImagePng = typingImagePng.scaled(20,20,Qt::KeepAspectRatio);
+    typingImage = new QLabel(this);
+    typingImage->setPixmap(QPixmap::fromImage(typingImagePng));
+    sb->addPermanentWidget(typingImage);*/
+
+    typingLabel = new QLabel(this);
+    //typingLabel->setText("1 & 2");
+    sb->addPermanentWidget(typingLabel);
+
+
+
+    //return;
+
     QString stylesheetString = QLatin1String(stylesheetFile.readAll());
     setStyleSheet(stylesheetString);
 
     setGeometry(QStyle::alignedRect(Qt::LeftToRight, Qt::AlignCenter, size(), qApp->desktop()->availableGeometry()));
     QObject::connect(ui->typingBox, SIGNAL(enterPressed()), this, SLOT(enterPressed()));
-    QObject::connect(ui->typingBox, SIGNAL(escapePressed()), this, SLOT(escapePressed()));
+    QObject::connect(ui->typingBox, SIGNAL(escapePressed()), this, SLOT(escapePressed()));    
+    QObject::connect(ui->typingBox, SIGNAL(SwitchMode()), this, SLOT(SwitchMode()));
 
     stranger = new Stranger(this);
     spy = new Spy(this);
@@ -39,12 +62,31 @@ MainWindow::MainWindow(QWidget *parent) :
     QObject::connect(spy, SIGNAL(ReceivedMessage(const QString &,const QString &)), this, SLOT(SpymodeReceivedMessage(const QString &,const QString &)));
     QObject::connect(spy, SIGNAL(StrangerDisconnected(const QString &)), this, SLOT(SpymodeStrangerDisconnected(const QString &)));
     QObject::connect(spy, SIGNAL(ConversationStarted()), this, SLOT(SpymodeStrangersConnected()));
+    QObject::connect(spy, SIGNAL(ConversationStartedWithQuestion(QString)), this, SLOT(StrangerConnectedWithQuestion(QString)));
     QObject::connect(spy, SIGNAL(StrangerStartsTyping()), this, SLOT(SpymodeStrangerStartsTyping(const QString &)));
     QObject::connect(spy, SIGNAL(StrangerStopsTyping()), this, SLOT(SpymodeStrangerStopsTyping(const QString &)));
 
+    chatMode = Spying;
+    SwitchMode(); //switch it to regular
 
-    stranger->StartConversation("en", "");
+    this->escapePressed();
+    //stranger->StartConversation("en", "");
     //spy->StartConversation("This is a test question");
+}
+
+void MainWindow::SwitchMode() {
+    if(chatMode==Regular) {
+        chatMode = AnsweringQuestions;
+        chatModeLabel->setText("Ans");
+    }
+    else if(chatMode==AnsweringQuestions) {
+            chatMode = Spying;
+        chatModeLabel->setText("Q");
+    }
+    else if(chatMode==Spying) {
+            chatMode = Regular;
+        chatModeLabel->setText("Regular");
+}
 }
 
 void MainWindow::enterPressed() {
@@ -57,12 +99,18 @@ void MainWindow::enterPressed() {
 void MainWindow::escapePressed() {
     ui->chatlogBox->clear();
     //spy->StartConversation(ui->typingBox->toPlainText());
-    stranger->StartConversation("en", "", true);
+    if(chatMode == Regular)
+        stranger->StartConversation("en", "", false);
+    else if(chatMode == Spying)
+        spy->StartConversation(ui->typingBox->toPlainText());
+    else if(chatMode == AnsweringQuestions)
+            stranger->StartConversation("en", "", true);
 }
 
 void MainWindow::ReceivedMessage(const QString &messageText) {
     ui->chatlogBox->append("Stranger: "+messageText);
     incomingMessageSound->play();
+    typingLabel->setText("");
 }
 
 void MainWindow::StrangerDisconnected() {
@@ -79,11 +127,13 @@ void MainWindow::StrangerConnectedWithQuestion(QString questionText) {
 }
 
 void MainWindow::StrangerStartsTyping() {
-    ui->chatlogBox->append("Stranger typing");
+    //ui->chatlogBox->append("Stranger typing");
+    typingLabel->setText("T");
 }
 
 void MainWindow::StrangerStopsTyping() {
-    ui->chatlogBox->append("Stranger stopped typing");
+    typingLabel->setText("");
+    //ui->chatlogBox->append("Stranger stopped typing");
 }
 
 MainWindow::~MainWindow()
@@ -109,6 +159,7 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
 
 void MainWindow::SpymodeReceivedMessage(const QString &strangerID, const QString &messageText){
     ui->chatlogBox->append(strangerID+": "+messageText);
+    typingLabel->setText("");
 }
 
 void MainWindow::SpymodeStrangerDisconnected(const QString &strangerID) {
@@ -120,7 +171,8 @@ void MainWindow::SpymodeStrangersConnected() {
 }
 
 void MainWindow::SpymodeStrangerStartsTyping(const QString &strangerID) {
-    ui->chatlogBox->append(strangerID+" types");
+    //ui->chatlogBox->append(strangerID+" types");
+    typingLabel->setText(strangerID);
 }
 
 void MainWindow::SpymodeStrangerStopsTyping(const QString &strangerID) {

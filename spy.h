@@ -15,7 +15,7 @@ public:
     explicit Spy(QObject *parent = 0);
 
 signals:
-    void ConversationStarted();
+    void ConversationStartedWithQuestion(QString question);
     void ReceivedMessage(const QString &strangerID, const QString &messageText);
     void StrangerStartsTyping(const QString &strangerID);
     void StrangerStopsTyping(const QString &strangerID);
@@ -27,7 +27,7 @@ public slots:
 
 private:
     void pollNewEvents();
-    bool processEvent(QJsonArray &commandWithArgs); //returns false if the conversation has ended
+    bool processEvent(QJsonArray eventArray); //returns false if the conversation has ended
 
     QNetworkAccessManager *nam;
     QString clientID;

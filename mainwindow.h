@@ -5,6 +5,7 @@
 #include "stranger.h"
 #include "spy.h"
 #include <QtMultimedia/QSoundEffect>
+#include <QLabel>
 
 namespace Ui {
 class MainWindow;
@@ -21,14 +22,24 @@ public:
 private:
     Ui::MainWindow *ui;
 
+    enum ChatMode {Regular, Spying, AnsweringQuestions};
+    ChatMode chatMode;
+
+    QLabel *typingImage;
+    QLabel *typingLabel;
+    QLabel *chatModeLabel;
+
 public slots:
     void enterPressed();
     void escapePressed();
+void SwitchMode();
 
 private:
     Stranger *stranger;
     Spy *spy;
     QSoundEffect *incomingMessageSound;
+
+
 
 protected:
     void keyPressEvent(QKeyEvent *event);
