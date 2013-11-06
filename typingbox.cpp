@@ -11,7 +11,7 @@ void TypingBox::keyPressEvent(QKeyEvent *event) {
         emit enterPressed();
     } else if(event->key()==Qt::Key_Escape) {
         emit escapePressed();
-    } else if(event->key()==Qt::Key_Z && event->modifiers()|Qt::Key_Control) {
+    } else if(event->key()==Qt::Key_Tab) {
         emit SwitchMode();
     } else {
        QTextBrowser::keyPressEvent(event);

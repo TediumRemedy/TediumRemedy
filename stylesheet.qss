@@ -15,3 +15,7 @@ QTextBrowser {
     border: 1px solid #555555;
     color: #ffffff;
 }
+
+QLabel {
+       color: #777777;
+}
