@@ -35,11 +35,13 @@ public slots:
 void SwitchMode();
 
 private:
+    void updateTypingLabelForSpymode();
+
     Stranger *stranger;
     Spy *spy;
     QSoundEffect *incomingMessageSound;
 
-
+    unsigned char strangerTypingMask; //00 - no one typing, f0 - first typing, 0f - second typing, ff - both typing
 
 protected:
     void keyPressEvent(QKeyEvent *event);

@@ -15,7 +15,8 @@ void Spy::StartConversation(QString questionToDiscuss) {
     EndConversation();
 
     QUrl requestUrl("http://front7.omegle.com/start?rcs=1&firstevents=1&spid=&randid=HNMESDAE&ask="+questionToDiscuss+"&lang=en");
-    const QNetworkRequest request(requestUrl);
+    QNetworkRequest request(requestUrl);
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
     const QByteArray data;
     QNetworkReply *reply = nam->post(request, data);
 }
@@ -52,7 +53,7 @@ void Spy::urlRequestFinished(QNetworkReply *reply) {
 
 void Spy::pollNewEvents() {
     QUrl requestUrl("http://front7.omegle.com/events");
-    const QNetworkRequest request(requestUrl);
+    QNetworkRequest request(requestUrl);
     const QByteArray data = QByteArray("id=" + QUrl::toPercentEncoding(clientID));
     QNetworkReply *reply = nam->post(request, data);
 }
@@ -70,6 +71,7 @@ bool Spy::processEvent(QJsonArray eventArray) {
     } else if(eventName == "spyTyping") {
         const QString strangerID = eventArray[0].toArray()[1].toString();
         emit StrangerStartsTyping(strangerID);
+        //qDebug() << "*****stranger starts typing: \""<<strangerID<<"\"*****";
     } else if(eventName == "spyStoppedTyping") {
         const QString strangerID = eventArray[0].toArray()[1].toString();
         emit StrangerStopsTyping(strangerID);
@@ -83,7 +85,7 @@ bool Spy::processEvent(QJsonArray eventArray) {
 
 void Spy::EndConversation() {
     QUrl requestUrl("http://front7.omegle.com/disconnect");
-    const QNetworkRequest request(requestUrl);
+    QNetworkRequest request(requestUrl);
     const QByteArray data = QByteArray("id="+QUrl::toPercentEncoding(clientID));
     QNetworkReply *reply = nam->post(request, data);
 }

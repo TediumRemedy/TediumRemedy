@@ -25,14 +25,16 @@ void Stranger::StartConversation(const QString language, const QString topics, c
         requestUrlString+="&wantsspy=1";
 
     QUrl requestUrl(requestUrlString);
-    const QNetworkRequest request(requestUrl);
+    QNetworkRequest request(requestUrl);
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
     const QByteArray data;
     QNetworkReply *reply = nam->post(request, data);
 }
 
 void Stranger::EndConversation() {
     QUrl requestUrl("http://front2.omegle.com/disconnect");
-    const QNetworkRequest request(requestUrl);
+    QNetworkRequest request(requestUrl);
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
     const QByteArray data = QByteArray("id="+QUrl::toPercentEncoding(clientID));
     QNetworkReply *reply = nam->post(request, data);
 }
@@ -40,21 +42,24 @@ void Stranger::EndConversation() {
 
 void Stranger::SendMessage(QString &messageText) {
     QUrl requestUrl("http://front2.omegle.com/send");
-    const QNetworkRequest request(requestUrl);
+    QNetworkRequest request(requestUrl);
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
     const QByteArray data = QByteArray("msg=" + QUrl::toPercentEncoding(messageText) +"&id="+QUrl::toPercentEncoding(clientID));
     QNetworkReply *reply = nam->post(request, data);
 }
 
 void Stranger::StartTyping() {
     QUrl requestUrl("http://front2.omegle.com/typing");
-    const QNetworkRequest request(requestUrl);
+    QNetworkRequest request(requestUrl);
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
     const QByteArray data = QByteArray("id="+QUrl::toPercentEncoding(clientID));
     QNetworkReply *reply = nam->post(request, data);
 }
 
 void Stranger::StopTyping() {
     QUrl requestUrl("http://front2.omegle.com/stopTyping");
-    const QNetworkRequest request(requestUrl);
+    QNetworkRequest request(requestUrl);
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
     const QByteArray data = QByteArray("id="+QUrl::toPercentEncoding(clientID));
     QNetworkReply *reply = nam->post(request, data);
 }
@@ -64,7 +69,7 @@ void Stranger::urlRequestFinished(QNetworkReply *reply) {
     delete reply;
 
     QString replyText(replyData);
-    qDebug() << replyText;
+    //qDebug() << replyText;
 
     QJsonParseError parseError;
     QJsonDocument document = QJsonDocument::fromJson(replyData, &parseError);
@@ -92,7 +97,8 @@ void Stranger::urlRequestFinished(QNetworkReply *reply) {
 
 void Stranger::pollNewEvents() {
     QUrl requestUrl("http://front2.omegle.com/events");
-    const QNetworkRequest request(requestUrl);
+    QNetworkRequest request(requestUrl);
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
     const QByteArray data = QByteArray("id=" + QUrl::toPercentEncoding(clientID));
     QNetworkReply *reply = nam->post(request, data);
 }

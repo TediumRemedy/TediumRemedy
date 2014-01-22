@@ -6,15 +6,25 @@
 #include <QtMultimedia/QSoundEffect>
 #include <QLabel>
 
+#include "russtranger.h"
+
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
+    //RusStranger *rusStranger = new RusStranger;
+
+    //rusStranger->requestChatKey();
+    //rusStranger->requestUid();
+
+    //return;
+
     ui->setupUi(this);
     QFile stylesheetFile("/home/mike/TediumRemedy/stylesheet.qss");
     if(!stylesheetFile.open(QFile::ReadOnly)) {
 
     }
+
 
     QStatusBar *sb = this->statusBar();
 
@@ -63,7 +73,7 @@ MainWindow::MainWindow(QWidget *parent) :
     QObject::connect(spy, SIGNAL(StrangerDisconnected(const QString &)), this, SLOT(SpymodeStrangerDisconnected(const QString &)));
     QObject::connect(spy, SIGNAL(ConversationStarted()), this, SLOT(SpymodeStrangersConnected()));
     QObject::connect(spy, SIGNAL(ConversationStartedWithQuestion(QString)), this, SLOT(StrangerConnectedWithQuestion(QString)));
-    QObject::connect(spy, SIGNAL(StrangerStartsTyping()), this, SLOT(SpymodeStrangerStartsTyping(const QString &)));
+    QObject::connect(spy, SIGNAL(StrangerStartsTyping(QString)), this, SLOT(SpymodeStrangerStartsTyping(const QString &)));
     QObject::connect(spy, SIGNAL(StrangerStopsTyping()), this, SLOT(SpymodeStrangerStopsTyping(const QString &)));
 
     chatMode = Spying;
@@ -72,6 +82,9 @@ MainWindow::MainWindow(QWidget *parent) :
     this->escapePressed();
     //stranger->StartConversation("en", "");
     //spy->StartConversation("This is a test question");
+
+    //ui->statusBar->hide();
+
 }
 
 void MainWindow::SwitchMode() {
@@ -91,16 +104,17 @@ void MainWindow::SwitchMode() {
 
 void MainWindow::enterPressed() {
     QString messageText = ui->typingBox->toPlainText();
-    ui->chatlogBox->append("You: "+messageText);
+    ui->chatlogBox->append("<font color='#aaaacc'>You: </font>"+messageText);
     ui->typingBox->clear();
     stranger->SendMessage(messageText);
 }
 
 void MainWindow::escapePressed() {
     ui->chatlogBox->clear();
+    typingLabel->setText("");
     //spy->StartConversation(ui->typingBox->toPlainText());
     if(chatMode == Regular)
-        stranger->StartConversation("en", "", false);
+        stranger->StartConversation("ru", "", false);
     else if(chatMode == Spying)
         spy->StartConversation(ui->typingBox->toPlainText());
     else if(chatMode == AnsweringQuestions)
@@ -108,33 +122,32 @@ void MainWindow::escapePressed() {
 }
 
 void MainWindow::ReceivedMessage(const QString &messageText) {
-    ui->chatlogBox->append("Stranger: "+messageText);
+    ui->chatlogBox->append("<font color='#ccaaaa'>Stranger: </font>"+messageText);
     incomingMessageSound->play();
     typingLabel->setText("");
 }
 
 void MainWindow::StrangerDisconnected() {
-    ui->chatlogBox->append("Stranger disconnected");
+    ui->chatlogBox->append("<font color='#aaaaaa'>Stranger disconnected</font>");
 }
 
 void MainWindow::StrangerConnected() {
 
-    ui->chatlogBox->append("Stranger connected");
+    ui->chatlogBox->append("<font color='#aaaaaa'>Stranger connected</font>");
 }
 
 void MainWindow::StrangerConnectedWithQuestion(QString questionText) {
-    ui->chatlogBox->append(questionText);
+    ui->chatlogBox->append("<font color='#aaaaaa'>"+questionText+"</font>");
 }
 
 void MainWindow::StrangerStartsTyping() {
-    //ui->chatlogBox->append("Stranger typing");
     typingLabel->setText("T");
 }
 
 void MainWindow::StrangerStopsTyping() {
     typingLabel->setText("");
-    //ui->chatlogBox->append("Stranger stopped typing");
 }
+
 
 MainWindow::~MainWindow()
 {
@@ -151,33 +164,66 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
         QCoreApplication::postEvent(ui->typingBox, eventDuplicate);
     }
     //event->key();
-    qDebug() << "Inside MyWindow keypress";
+    //qDebug() << "Inside MyWindow keypress";
 
 }
 
 //spy mode
 
 void MainWindow::SpymodeReceivedMessage(const QString &strangerID, const QString &messageText){
+    SpymodeStrangerStopsTyping(strangerID);
     ui->chatlogBox->append(strangerID+": "+messageText);
-    typingLabel->setText("");
+    //typingLabel->setText("");
 }
 
 void MainWindow::SpymodeStrangerDisconnected(const QString &strangerID) {
     ui->chatlogBox->append(strangerID+" disconnected");
+    strangerTypingMask = 0x00;
+    typingLabel->setText("");
 }
 
 void MainWindow::SpymodeStrangersConnected() {
     ui->chatlogBox->append("Conversation started");
 }
 
+void MainWindow::updateTypingLabelForSpymode() {
+    if(strangerTypingMask == 0xF0)
+        typingLabel->setText("1");
+    else if(strangerTypingMask == 0x0F)
+        typingLabel->setText("2");
+    else if(strangerTypingMask == 0x00)
+        typingLabel->setText("");
+    else if(strangerTypingMask == 0xFF)
+        typingLabel->setText("1&2");
+    else
+        typingLabel->setText("UnknownTyping"); //shouldnt be here
+}
+
 void MainWindow::SpymodeStrangerStartsTyping(const QString &strangerID) {
-    //ui->chatlogBox->append(strangerID+" types");
-    typingLabel->setText(strangerID);
+    //ui->chatlogBox->append("Stranger typing");
+    if(strangerID == "Stranger 1") {
+        strangerTypingMask |= 0xF0;
+    } else if(strangerID == "Stranger 2") {
+        strangerTypingMask |= 0x0F;
+    }
+
+    updateTypingLabelForSpymode();
+    //typingLabel->setText("T");
 }
 
 void MainWindow::SpymodeStrangerStopsTyping(const QString &strangerID) {
+    if(strangerID == "Stranger 1") {
+        strangerTypingMask &= 0x0F;
+    } else if(strangerID == "Stranger 2") {
+        strangerTypingMask &= 0xF0;
+    }
 
+    updateTypingLabelForSpymode();
+
+
+    //ui->chatlogBox->append("Stranger stopped typing");
 }
+
 
 void MainWindow::PlaySoundFile(QString filename) {
     //QSoundEffect s()
