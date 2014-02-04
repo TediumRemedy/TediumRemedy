@@ -1,9 +1,0 @@
-#!/usr/bin/perl
-import urllib
-
-req = urllib.Request('http://omegle.com')
-response = urllib.urlopen(req)
-resultstr = response.read()
-print(resultstr)
-
-
