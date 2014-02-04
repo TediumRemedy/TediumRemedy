@@ -6,6 +6,7 @@
 #include "spy.h"
 #include <QtMultimedia/QSoundEffect>
 #include <QLabel>
+#include <QSound>
 
 namespace Ui {
 class MainWindow;
@@ -39,7 +40,12 @@ private:
 
     Stranger *stranger;
     Spy *spy;
-    QSoundEffect *incomingMessageSound;
+
+    QSound *receivedMessageSound;
+    QSound *sentMessageSound;
+    QSound *disconnectedSound;
+    QSound *connectedSound;
+
 
     unsigned char strangerTypingMask; //00 - no one typing, f0 - first typing, 0f - second typing, ff - both typing
 

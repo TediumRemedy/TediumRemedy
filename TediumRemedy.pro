@@ -30,3 +30,6 @@ FORMS    += mainwindow.ui
 OTHER_FILES += \
     stylesheet.qss \
     Readme.txt
+
+RESOURCES += \
+    Resources.qrc

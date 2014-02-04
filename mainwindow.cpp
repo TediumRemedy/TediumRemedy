@@ -5,6 +5,7 @@
 #include <QDebug>
 #include <QtMultimedia/QSoundEffect>
 #include <QLabel>
+#include <QSound>
 
 #include "russtranger.h"
 
@@ -20,11 +21,16 @@ MainWindow::MainWindow(QWidget *parent) :
     //return;
 
     ui->setupUi(this);
-    QFile stylesheetFile("/home/mike/TediumRemedy/stylesheet.qss");
-    if(!stylesheetFile.open(QFile::ReadOnly)) {
+    QFile stylesheetFile(":/resources/stylesheet.qss");
 
+
+    //qDebug() << QFile::exists(":/tediumremedy/stylesheet.qss");
+
+    if(!stylesheetFile.open(QFile::ReadOnly)) {
+        qDebug() << "Error opening file " << stylesheetFile.error();
     }
 
+    //return;
 
     QStatusBar *sb = this->statusBar();
 
@@ -57,9 +63,12 @@ MainWindow::MainWindow(QWidget *parent) :
 
     stranger = new Stranger(this);
     spy = new Spy(this);
-    incomingMessageSound = new QSoundEffect(this);
-    incomingMessageSound->setSource(QUrl("/home/mike/TediumRemedy/bell2.wav"));
-    incomingMessageSound->play();
+
+
+    receivedMessageSound = new QSound(":/resources/received_message.wav", this);
+    sentMessageSound = new QSound(":/resources/sent_message.wav", this);
+    connectedSound = new QSound(":/resources/connected.wav", this);
+    disconnectedSound = new QSound(":/resources/disconnected.wav", this);
 
     QObject::connect(stranger, SIGNAL(ReceivedMessage(const QString &)), this, SLOT(ReceivedMessage(const QString &)));
     QObject::connect(stranger, SIGNAL(StrangerDisconnected()), this, SLOT(StrangerDisconnected()));
@@ -107,6 +116,7 @@ void MainWindow::enterPressed() {
     ui->chatlogBox->append("<font color='#aaaacc'>You: </font>"+messageText);
     ui->typingBox->clear();
     stranger->SendMessage(messageText);
+    sentMessageSound->play();
 }
 
 void MainWindow::escapePressed() {
@@ -123,17 +133,19 @@ void MainWindow::escapePressed() {
 
 void MainWindow::ReceivedMessage(const QString &messageText) {
     ui->chatlogBox->append("<font color='#ccaaaa'>Stranger: </font>"+messageText);
-    incomingMessageSound->play();
+    receivedMessageSound->play();
     typingLabel->setText("");
 }
 
 void MainWindow::StrangerDisconnected() {
     ui->chatlogBox->append("<font color='#aaaaaa'>Stranger disconnected</font>");
+    disconnectedSound->play();
 }
 
 void MainWindow::StrangerConnected() {
 
     ui->chatlogBox->append("<font color='#aaaaaa'>Stranger connected</font>");
+    connectedSound->play();
 }
 
 void MainWindow::StrangerConnectedWithQuestion(QString questionText) {

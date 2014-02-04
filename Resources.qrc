@@ -1,0 +1,9 @@
+<RCC>
+    <qresource prefix="/resources">
+        <file>stylesheet.qss</file>
+        <file>connected.wav</file>
+        <file>disconnected.wav</file>
+        <file>received_message.wav</file>
+        <file>sent_message.wav</file>
+    </qresource>
+</RCC>
