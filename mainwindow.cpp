@@ -65,10 +65,10 @@ MainWindow::MainWindow(QWidget *parent) :
     spy = new Spy(this);
 
 
-    receivedMessageSound = new QSound(":/resources/received_message.wav", this);
-    sentMessageSound = new QSound(":/resources/sent_message.wav", this);
-    connectedSound = new QSound(":/resources/connected.wav", this);
-    disconnectedSound = new QSound(":/resources/disconnected.wav", this);
+    //receivedMessageSound = new QSound(":/resources/received_message.wav", this);
+    //sentMessageSound = new QSound(":/resources/sent_message.wav", this);
+    //connectedSound = new QSound(":/resources/connected.wav", this);
+    //disconnectedSound = new QSound(":/resources/disconnected.wav", this);
 
     QObject::connect(stranger, SIGNAL(ReceivedMessage(const QString &)), this, SLOT(ReceivedMessage(const QString &)));
     QObject::connect(stranger, SIGNAL(StrangerDisconnected()), this, SLOT(StrangerDisconnected()));
@@ -116,7 +116,7 @@ void MainWindow::enterPressed() {
     ui->chatlogBox->append("<font color='#aaaacc'>You: </font>"+messageText);
     ui->typingBox->clear();
     stranger->SendMessage(messageText);
-    sentMessageSound->play();
+    //sentMessageSound->play();
 }
 
 void MainWindow::escapePressed() {
@@ -133,19 +133,19 @@ void MainWindow::escapePressed() {
 
 void MainWindow::ReceivedMessage(const QString &messageText) {
     ui->chatlogBox->append("<font color='#ccaaaa'>Stranger: </font>"+messageText);
-    receivedMessageSound->play();
+    //receivedMessageSound->play();
     typingLabel->setText("");
 }
 
 void MainWindow::StrangerDisconnected() {
     ui->chatlogBox->append("<font color='#aaaaaa'>Stranger disconnected</font>");
-    disconnectedSound->play();
+    //disconnectedSound->play();
 }
 
 void MainWindow::StrangerConnected() {
 
     ui->chatlogBox->append("<font color='#aaaaaa'>Stranger connected</font>");
-    connectedSound->play();
+    //connectedSound->play();
 }
 
 void MainWindow::StrangerConnectedWithQuestion(QString questionText) {
