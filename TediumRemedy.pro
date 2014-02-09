@@ -29,7 +29,8 @@ FORMS    += mainwindow.ui
 
 OTHER_FILES += \
     stylesheet.qss \
-    Readme.txt
+    Readme.txt \
+    stylesheet_bright.qss
 
 RESOURCES += \
     Resources.qrc

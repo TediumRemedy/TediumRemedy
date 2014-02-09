@@ -9,5 +9,4 @@ You can start new conversation by just pressing Esc once.
 You can switch mode - "Regular conversaion", "Asking Questions (Spying)", "Answering Questions", by pressing 'Tab' (then the new mode kicks in after you press Esc). There's a mode indicator in the status bar.
 In "Asking Questions" mode, before pressing Esc to start, make sure you've entered the question into typing box.
 
-Currently app only supports Omegle.com. Maybe i'll add chatvdvoem.ru support later (see russtranger.cpp). Or someone else.
-
+Currently app only supports Omegle.com (multilingual) and Chatvdvoem.ru (russian). In plans adding Moluren.net/chat (chinese chat).

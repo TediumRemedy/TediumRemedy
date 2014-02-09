@@ -3,6 +3,7 @@
 
 #include <QTextBrowser>
 #include <QKeyEvent>
+#include <QTimer>
 
 class TypingBox : public QTextBrowser
 {
@@ -16,8 +17,19 @@ public:
 signals:
     void enterPressed();
     void escapePressed();
-    void SwitchMode();
+    void switchMode();
+
+    void typingStarted();
+    void typingStopped();
 public slots:
+
+private:
+    QTimer *typingTimer;
+    bool typingGoingOn;
+
+private slots:
+    void typingTimerFireAction();
+    void textChanged();
 
 };
 

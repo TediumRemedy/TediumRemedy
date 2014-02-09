@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include "stranger.h"
 #include "spy.h"
+#include "russtranger.h"
 #include <QtMultimedia/QSoundEffect>
 #include <QLabel>
 #include <QSound>
@@ -33,13 +34,16 @@ private:
 public slots:
     void enterPressed();
     void escapePressed();
-void SwitchMode();
+    void SwitchMode();
+    void TypingStarted();
+    void TypingStopped();
 
 private:
     void updateTypingLabelForSpymode();
 
     Stranger *stranger;
     Spy *spy;
+    RusStranger *rusStranger;
 
     QSound *receivedMessageSound;
     QSound *sentMessageSound;

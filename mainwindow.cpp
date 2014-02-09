@@ -6,63 +6,54 @@
 #include <QtMultimedia/QSoundEffect>
 #include <QLabel>
 #include <QSound>
+#include <QMediaPlayer>
 
 #include "russtranger.h"
+
+void PlaySound() {
+    //QMediaPlayer *p = new QMediaPlayer(0);
+    //p->setMedia(QMediaContent(QUrl::fromLocalFile("/home/mike/Lana.mp3")));
+    //p->play();
+}
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
-    //RusStranger *rusStranger = new RusStranger;
-
-    //rusStranger->requestChatKey();
-    //rusStranger->requestUid();
-
-    //return;
-
+    PlaySound();
     ui->setupUi(this);
-    QFile stylesheetFile(":/resources/stylesheet.qss");
-
-
-    //qDebug() << QFile::exists(":/tediumremedy/stylesheet.qss");
-
+    QFile stylesheetFile(":/resources/stylesheet_bright.qss");
     if(!stylesheetFile.open(QFile::ReadOnly)) {
         qDebug() << "Error opening file " << stylesheetFile.error();
     }
-
-    //return;
-
-    QStatusBar *sb = this->statusBar();
-
-    chatModeLabel = new QLabel(this);
-    //chatModeLabel->setText("R");
-    sb->addPermanentWidget(chatModeLabel);
-
-
-    /*QImage typingImagePng("/home/mike/TediumRemedy/typing.png");
-    typingImagePng = typingImagePng.scaled(20,20,Qt::KeepAspectRatio);
-    typingImage = new QLabel(this);
-    typingImage->setPixmap(QPixmap::fromImage(typingImagePng));
-    sb->addPermanentWidget(typingImage);*/
-
-    typingLabel = new QLabel(this);
-    //typingLabel->setText("1 & 2");
-    sb->addPermanentWidget(typingLabel);
-
-
-
-    //return;
-
     QString stylesheetString = QLatin1String(stylesheetFile.readAll());
     setStyleSheet(stylesheetString);
 
+    QStatusBar *sb = this->statusBar();
+    chatModeLabel = new QLabel(this);
+    sb->addPermanentWidget(chatModeLabel);
+    typingLabel = new QLabel(this);
+    sb->addPermanentWidget(typingLabel);
+
+    //center the window
     setGeometry(QStyle::alignedRect(Qt::LeftToRight, Qt::AlignCenter, size(), qApp->desktop()->availableGeometry()));
+
+
+
     QObject::connect(ui->typingBox, SIGNAL(enterPressed()), this, SLOT(enterPressed()));
     QObject::connect(ui->typingBox, SIGNAL(escapePressed()), this, SLOT(escapePressed()));    
-    QObject::connect(ui->typingBox, SIGNAL(SwitchMode()), this, SLOT(SwitchMode()));
+    QObject::connect(ui->typingBox, SIGNAL(switchMode()), this, SLOT(SwitchMode()));
+    QObject::connect(ui->typingBox, SIGNAL(typingStarted()), this, SLOT(TypingStarted()));
+    QObject::connect(ui->typingBox, SIGNAL(typingStopped()), this, SLOT(TypingStopped()));
+
+
 
     stranger = new Stranger(this);
     spy = new Spy(this);
+    rusStranger = new RusStranger(this);
+
+    //rusStranger->requestChatKey();
+    //rusStranger->requestUid();
 
 
     //receivedMessageSound = new QSound(":/resources/received_message.wav", this);
@@ -70,11 +61,13 @@ MainWindow::MainWindow(QWidget *parent) :
     //connectedSound = new QSound(":/resources/connected.wav", this);
     //disconnectedSound = new QSound(":/resources/disconnected.wav", this);
 
+    //QSound *testSound = new QSound("/usr/share/sounds/KDE_Logout_new.wav");
+    //testSound->play();
+
     QObject::connect(stranger, SIGNAL(ReceivedMessage(const QString &)), this, SLOT(ReceivedMessage(const QString &)));
     QObject::connect(stranger, SIGNAL(StrangerDisconnected()), this, SLOT(StrangerDisconnected()));
     QObject::connect(stranger, SIGNAL(ConversationStarted()), this, SLOT(StrangerConnected()));
     QObject::connect(stranger, SIGNAL(ConversationStartedWithQuestion(QString)), this, SLOT(StrangerConnectedWithQuestion(QString)));
-
     QObject::connect(stranger, SIGNAL(StrangerStartsTyping()), this, SLOT(StrangerStartsTyping()));
     QObject::connect(stranger, SIGNAL(StrangerStopsTyping()), this, SLOT(StrangerStopsTyping()));
 
@@ -85,43 +78,56 @@ MainWindow::MainWindow(QWidget *parent) :
     QObject::connect(spy, SIGNAL(StrangerStartsTyping(QString)), this, SLOT(SpymodeStrangerStartsTyping(const QString &)));
     QObject::connect(spy, SIGNAL(StrangerStopsTyping()), this, SLOT(SpymodeStrangerStopsTyping(const QString &)));
 
+    QObject::connect(rusStranger, SIGNAL(ReceivedMessage(const QString &)), this, SLOT(ReceivedMessage(const QString &)));
+    QObject::connect(rusStranger, SIGNAL(StrangerDisconnected()), this, SLOT(StrangerDisconnected()));
+    QObject::connect(rusStranger, SIGNAL(ConversationStarted()), this, SLOT(StrangerConnected()));
+    QObject::connect(rusStranger, SIGNAL(StrangerStartsTyping()), this, SLOT(StrangerStartsTyping()));
+    QObject::connect(rusStranger, SIGNAL(StrangerStopsTyping()), this, SLOT(StrangerStopsTyping()));
+
     chatMode = Spying;
     SwitchMode(); //switch it to regular
 
     this->escapePressed();
-    //stranger->StartConversation("en", "");
-    //spy->StartConversation("This is a test question");
+}
 
-    //ui->statusBar->hide();
+void MainWindow::TypingStarted() {
+    rusStranger->StartTyping();
+}
 
+void MainWindow::TypingStopped() {
+    rusStranger->StopTyping();
 }
 
 void MainWindow::SwitchMode() {
     if(chatMode==Regular) {
         chatMode = AnsweringQuestions;
         chatModeLabel->setText("Ans");
-    }
-    else if(chatMode==AnsweringQuestions) {
-            chatMode = Spying;
+    } else if(chatMode==AnsweringQuestions) {
+        chatMode = Spying;
         chatModeLabel->setText("Q");
-    }
-    else if(chatMode==Spying) {
-            chatMode = Regular;
+    } else if(chatMode==Spying) {
+        chatMode = Regular;
         chatModeLabel->setText("Regular");
-}
+    }
 }
 
 void MainWindow::enterPressed() {
     QString messageText = ui->typingBox->toPlainText();
     ui->chatlogBox->append("<font color='#aaaacc'>You: </font>"+messageText);
     ui->typingBox->clear();
-    stranger->SendMessage(messageText);
+    rusStranger->SendMessage(messageText);
+
+    //stranger->SendMessage(messageText);
+
     //sentMessageSound->play();
 }
 
 void MainWindow::escapePressed() {
     ui->chatlogBox->clear();
     typingLabel->setText("");
+    rusStranger->StartConversation();
+    return;
+
     //spy->StartConversation(ui->typingBox->toPlainText());
     if(chatMode == Regular)
         stranger->StartConversation("ru", "", false);
@@ -184,18 +190,18 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
 
 void MainWindow::SpymodeReceivedMessage(const QString &strangerID, const QString &messageText){
     SpymodeStrangerStopsTyping(strangerID);
-    ui->chatlogBox->append(strangerID+": "+messageText);
+    ui->chatlogBox->append("<font color='#aaaaaa'>"+strangerID+": </font>"+messageText);
     //typingLabel->setText("");
 }
 
 void MainWindow::SpymodeStrangerDisconnected(const QString &strangerID) {
-    ui->chatlogBox->append(strangerID+" disconnected");
+    ui->chatlogBox->append("<font color='#aaaaaa'>"+strangerID+" disconnected</font>");
     strangerTypingMask = 0x00;
     typingLabel->setText("");
 }
 
 void MainWindow::SpymodeStrangersConnected() {
-    ui->chatlogBox->append("Conversation started");
+    ui->chatlogBox->append("<font color='#aaaaaa'>Conversation started</font>");
 }
 
 void MainWindow::updateTypingLabelForSpymode() {
@@ -236,32 +242,3 @@ void MainWindow::SpymodeStrangerStopsTyping(const QString &strangerID) {
     //ui->chatlogBox->append("Stranger stopped typing");
 }
 
-
-void MainWindow::PlaySoundFile(QString filename) {
-    //QSoundEffect s()
-    /*QFile inputFile;     // class member.
-    static QAudioOutput* audio = NULL; // class member.
-    inputFile.setFileName("/home/mike/TediumRemedy/bell.wav");
-    inputFile.open(QIODevice::ReadOnly);
-
-    QAudioFormat format;
-    // Set up the format, eg.
-    format.setFrequency(8000);
-    format.setChannels(1);
-    format.setSampleSize(8);
-    format.setCodec("audio/pcm");
-    format.setByteOrder(QAudioFormat::LittleEndian);
-    format.setSampleType(QAudioFormat::UnSignedInt);
-
-    QAudioDeviceInfo info(QAudioDeviceInfo::defaultOutputDevice());
-    if (!info.isFormatSupported(format)) {
-        qWarning()<<"raw audio format not supported by backend, cannot play audio.";
-        return;
-    }
-
-    if(!audio)
-        audio = new QAudioOutput(format, this);
-
-    //connect(audio,SIGNAL(stateChanged(QAudio::State)),SLOT(finishedPlaying(QAudio::State)));
-    audio->start(&inputFile);*/
-}
