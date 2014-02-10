@@ -10,3 +10,5 @@ You can switch mode - "Regular conversaion", "Asking Questions (Spying)", "Answe
 In "Asking Questions" mode, before pressing Esc to start, make sure you've entered the question into typing box.
 
 Currently app only supports Omegle.com (multilingual) and Chatvdvoem.ru (russian). In plans adding Moluren.net/chat (chinese chat).
+
+![Alt text](https://raw.github.com/TediumRemedy/TediumRemedy/master/Screenshot.png)
