@@ -7,6 +7,8 @@
 #include <QLabel>
 #include <QSound>
 #include <QMediaPlayer>
+#include <QLayout>
+#include <QComboBox>
 
 #include "russtranger.h"
 
@@ -20,8 +22,22 @@ MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
+
     PlaySound();
     ui->setupUi(this);
+
+    /*QHBoxLayout *dockLayout = new QHBoxLayout(this);
+    QComboBox *b = new QComboBox(this);
+    QTextEdit *t = new QTextEdit(this);
+    dockLayout->addWidget(b);
+    dockLayout->addWidget(t);
+    dockLayout->setSizeConstraint(QLayout::SetMinimumSize);
+
+
+    ui->dockWidgetContents_2->setLayout(dockLayout);
+    */
+
+
     QFile stylesheetFile(":/resources/stylesheet_bright.qss");
     if(!stylesheetFile.open(QFile::ReadOnly)) {
         qDebug() << "Error opening file " << stylesheetFile.error();
@@ -84,18 +100,24 @@ MainWindow::MainWindow(QWidget *parent) :
     QObject::connect(rusStranger, SIGNAL(StrangerStartsTyping()), this, SLOT(StrangerStartsTyping()));
     QObject::connect(rusStranger, SIGNAL(StrangerStopsTyping()), this, SLOT(StrangerStopsTyping()));
 
-    chatMode = Spying;
+    chatMode = Russian;
     SwitchMode(); //switch it to regular
 
     this->escapePressed();
 }
 
 void MainWindow::TypingStarted() {
-    rusStranger->StartTyping();
+    if(chatMode == Russian)
+        rusStranger->StartTyping();
+    else if(chatMode == AnsweringQuestions || chatMode == Regular)
+        stranger->StartTyping();
 }
 
 void MainWindow::TypingStopped() {
-    rusStranger->StopTyping();
+    if(chatMode == Russian)
+        rusStranger->StopTyping();
+    else if(chatMode == AnsweringQuestions || chatMode == Regular)
+        stranger->StopTyping();
 }
 
 void MainWindow::SwitchMode() {
@@ -106,6 +128,9 @@ void MainWindow::SwitchMode() {
         chatMode = Spying;
         chatModeLabel->setText("Q");
     } else if(chatMode==Spying) {
+        chatMode = Russian;
+        chatModeLabel->setText("Russian");
+    } else if(chatMode==Russian) {
         chatMode = Regular;
         chatModeLabel->setText("Regular");
     }
@@ -113,7 +138,7 @@ void MainWindow::SwitchMode() {
 
 void MainWindow::enterPressed() {
     QString messageText = ui->typingBox->toPlainText();
-    ui->chatlogBox->append("<font color='#aaaacc'>You: </font>"+messageText);
+    ui->chatlogBox->append("<font color='#aaaacc'><b>You: </b></font>"+messageText);
     ui->typingBox->clear();
     rusStranger->SendMessage(messageText);
 
@@ -125,20 +150,21 @@ void MainWindow::enterPressed() {
 void MainWindow::escapePressed() {
     ui->chatlogBox->clear();
     typingLabel->setText("");
-    rusStranger->StartConversation();
-    return;
+    strangerTypingMask = 0;
 
     //spy->StartConversation(ui->typingBox->toPlainText());
     if(chatMode == Regular)
-        stranger->StartConversation("ru", "", false);
+        stranger->StartConversation("en", "", false);
     else if(chatMode == Spying)
         spy->StartConversation(ui->typingBox->toPlainText());
     else if(chatMode == AnsweringQuestions)
-            stranger->StartConversation("en", "", true);
+        stranger->StartConversation("en", "", true);
+    else if(chatMode == Russian)
+        rusStranger->StartConversation();
 }
 
 void MainWindow::ReceivedMessage(const QString &messageText) {
-    ui->chatlogBox->append("<font color='#ccaaaa'>Stranger: </font>"+messageText);
+    ui->chatlogBox->append("<font color='#ccaaaa'><b>Stranger: </b></font>"+messageText);
     //receivedMessageSound->play();
     typingLabel->setText("");
 }
@@ -190,7 +216,7 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
 
 void MainWindow::SpymodeReceivedMessage(const QString &strangerID, const QString &messageText){
     SpymodeStrangerStopsTyping(strangerID);
-    ui->chatlogBox->append("<font color='#aaaaaa'>"+strangerID+": </font>"+messageText);
+    ui->chatlogBox->append("<font color='#aaaaaa'><b>"+strangerID+": </b></font>"+messageText);
     //typingLabel->setText("");
 }
 

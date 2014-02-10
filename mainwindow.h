@@ -24,7 +24,7 @@ public:
 private:
     Ui::MainWindow *ui;
 
-    enum ChatMode {Regular, Spying, AnsweringQuestions};
+    enum ChatMode {Regular, Spying, AnsweringQuestions, Russian};
     ChatMode chatMode;
 
     QLabel *typingImage;

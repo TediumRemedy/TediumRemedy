@@ -81,6 +81,14 @@ void Stranger::urlRequestFinished(QNetworkReply *reply) {
         //we received a clientID
         clientID = document.object()["clientID"].toString();
         qDebug() << "Got client id: " << clientID;
+
+        //process event - maybe its "connected"...
+        if(document.object().find("events") != document.object().end()) {
+            QJsonArray events = document.object()["events"].toArray();
+            //qDebug() << "AAAA: " << events[1].toArray()[0].toString();
+            processEvent(events);
+        }
+
         pollNewEvents();
     } else if(document.isArray() && !document.array().isEmpty()) {
         //first element of this array should be an array of [command, param1, ...]
@@ -104,7 +112,8 @@ void Stranger::pollNewEvents() {
 }
 
 bool Stranger::processEvent(QJsonArray eventArray) {
-    QString eventName = eventArray[0].toArray()[0].toString();\
+    QString eventName = eventArray[0].toArray()[0].toString();
+
     if(eventName == "strangerDisconnected") {
         emit StrangerDisconnected();
         return false;
@@ -115,11 +124,17 @@ bool Stranger::processEvent(QJsonArray eventArray) {
         emit StrangerStartsTyping();
     } else if(eventName == "stoppedTyping") {
         emit StrangerStopsTyping();
-    } else if(eventName == "connected") {
-        if(eventArray[1].isArray() && eventArray[1].toArray()[0].toString() == "question")
-            emit ConversationStartedWithQuestion(eventArray[1].toArray()[1].toString());
-        else
-            emit ConversationStarted();
+    } else {
+        //search for "connected" event
+        for(int i=0; i<eventArray.count(); i++) {
+            //qDebug() << "Looking for cnt: " << eventArray[0].toArray()[i].toString();
+            if(eventArray[i].toArray()[0].toString() == "connected") {
+                if(eventArray[i+1].isArray() && eventArray[i+1].toArray()[0].toString() == "question")
+                    emit ConversationStartedWithQuestion(eventArray[1].toArray()[1].toString());
+                else
+                    emit ConversationStarted();
+            }
+        }
     }
     return true;
 }
