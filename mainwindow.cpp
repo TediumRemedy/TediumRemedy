@@ -12,6 +12,12 @@
 
 #include "russtranger.h"
 
+
+const char SysMsgColor[] = "#888888";
+const char StrangerColor[] = "#ff8888";
+const char YouColor[] = "#8888ff";
+
+
 void PlaySound() {
     //QMediaPlayer *p = new QMediaPlayer(0);
     //p->setMedia(QMediaContent(QUrl::fromLocalFile("/home/mike/Lana.mp3")));
@@ -38,7 +44,7 @@ MainWindow::MainWindow(QWidget *parent) :
     */
 
 
-    QFile stylesheetFile(":/resources/stylesheet_bright.qss");
+    QFile stylesheetFile(":/resources/stylesheet.qss");
     if(!stylesheetFile.open(QFile::ReadOnly)) {
         qDebug() << "Error opening file " << stylesheetFile.error();
     }
@@ -86,6 +92,8 @@ MainWindow::MainWindow(QWidget *parent) :
     QObject::connect(stranger, SIGNAL(ConversationStartedWithQuestion(QString)), this, SLOT(StrangerConnectedWithQuestion(QString)));
     QObject::connect(stranger, SIGNAL(StrangerStartsTyping()), this, SLOT(StrangerStartsTyping()));
     QObject::connect(stranger, SIGNAL(StrangerStopsTyping()), this, SLOT(StrangerStopsTyping()));
+    QObject::connect(stranger, SIGNAL(SystemMessage(const QString &)), this, SLOT(SystemMessage(const QString &)));
+
 
     QObject::connect(spy, SIGNAL(ReceivedMessage(const QString &,const QString &)), this, SLOT(SpymodeReceivedMessage(const QString &,const QString &)));
     QObject::connect(spy, SIGNAL(StrangerDisconnected(const QString &)), this, SLOT(SpymodeStrangerDisconnected(const QString &)));
@@ -93,6 +101,7 @@ MainWindow::MainWindow(QWidget *parent) :
     QObject::connect(spy, SIGNAL(ConversationStartedWithQuestion(QString)), this, SLOT(StrangerConnectedWithQuestion(QString)));
     QObject::connect(spy, SIGNAL(StrangerStartsTyping(QString)), this, SLOT(SpymodeStrangerStartsTyping(const QString &)));
     QObject::connect(spy, SIGNAL(StrangerStopsTyping()), this, SLOT(SpymodeStrangerStopsTyping(const QString &)));
+    QObject::connect(spy, SIGNAL(SystemMessage(const QString &)), this, SLOT(SystemMessage(const QString &)));
 
     QObject::connect(rusStranger, SIGNAL(ReceivedMessage(const QString &)), this, SLOT(ReceivedMessage(const QString &)));
     QObject::connect(rusStranger, SIGNAL(StrangerDisconnected()), this, SLOT(StrangerDisconnected()));
@@ -104,6 +113,10 @@ MainWindow::MainWindow(QWidget *parent) :
     SwitchMode(); //switch it to regular
 
     this->escapePressed();
+}
+
+void MainWindow::SystemMessage(const QString &message) {
+     ui->chatlogBox->append(QString("<font color='")+SysMsgColor+"'>"+message+"</font>");
 }
 
 void MainWindow::TypingStarted() {
@@ -138,7 +151,7 @@ void MainWindow::SwitchMode() {
 
 void MainWindow::enterPressed() {
     QString messageText = ui->typingBox->toPlainText();
-    ui->chatlogBox->append("<font color='#aaaacc'><b>You: </b></font>"+messageText);
+    ui->chatlogBox->append(QString("<font color='")+YouColor+"'><b>You: </b></font>"+messageText);
     ui->typingBox->clear();
     rusStranger->SendMessage(messageText);
 
@@ -164,24 +177,24 @@ void MainWindow::escapePressed() {
 }
 
 void MainWindow::ReceivedMessage(const QString &messageText) {
-    ui->chatlogBox->append("<font color='#ccaaaa'><b>Stranger: </b></font>"+messageText);
+    ui->chatlogBox->append(QString("<font color='")+StrangerColor+"'><b>Stranger: </b></font>"+messageText);
     //receivedMessageSound->play();
     typingLabel->setText("");
 }
 
 void MainWindow::StrangerDisconnected() {
-    ui->chatlogBox->append("<font color='#aaaaaa'>Stranger disconnected</font>");
+    ui->chatlogBox->append(QString("<font color='")+SysMsgColor+"'>Stranger disconnected</font>");
     //disconnectedSound->play();
 }
 
 void MainWindow::StrangerConnected() {
 
-    ui->chatlogBox->append("<font color='#aaaaaa'>Stranger connected</font>");
+    ui->chatlogBox->append(QString("<font color='")+SysMsgColor+"'>Stranger connected</font>");
     //connectedSound->play();
 }
 
 void MainWindow::StrangerConnectedWithQuestion(QString questionText) {
-    ui->chatlogBox->append("<font color='#aaaaaa'>"+questionText+"</font>");
+    ui->chatlogBox->append(QString("<font color='")+SysMsgColor+"'>"+questionText+"</font>");
 }
 
 void MainWindow::StrangerStartsTyping() {
@@ -216,18 +229,18 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
 
 void MainWindow::SpymodeReceivedMessage(const QString &strangerID, const QString &messageText){
     SpymodeStrangerStopsTyping(strangerID);
-    ui->chatlogBox->append("<font color='#aaaaaa'><b>"+strangerID+": </b></font>"+messageText);
+    ui->chatlogBox->append(QString("<font color='")+SysMsgColor+"'><b>"+strangerID+": </b></font>"+messageText);
     //typingLabel->setText("");
 }
 
 void MainWindow::SpymodeStrangerDisconnected(const QString &strangerID) {
-    ui->chatlogBox->append("<font color='#aaaaaa'>"+strangerID+" disconnected</font>");
+    ui->chatlogBox->append(QString("<font color='")+SysMsgColor+"'>"+strangerID+" disconnected</font>");
     strangerTypingMask = 0x00;
     typingLabel->setText("");
 }
 
 void MainWindow::SpymodeStrangersConnected() {
-    ui->chatlogBox->append("<font color='#aaaaaa'>Conversation started</font>");
+    ui->chatlogBox->append(QString("<font color='")+SysMsgColor+"'>Conversation started</font>");
 }
 
 void MainWindow::updateTypingLabelForSpymode() {

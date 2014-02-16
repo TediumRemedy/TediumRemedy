@@ -21,9 +21,10 @@ signals:
     void StrangerStartsTyping();
     void StrangerStopsTyping();
     void StrangerDisconnected();
+    void SystemMessage(const QString &message);
 
 public slots:
-    void StartConversation(const QString language, const QString topics, const bool wantSpy = false);
+    void StartConversation(const QString language, const QString topics, const bool wantSpy = false, const bool unmonitored = false);
     void EndConversation();
     void SendMessage(QString &messageText);
     void StartTyping();

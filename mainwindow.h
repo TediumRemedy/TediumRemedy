@@ -63,6 +63,7 @@ private slots:
     void StrangerConnectedWithQuestion(QString questionText);
     void StrangerStartsTyping();
     void StrangerStopsTyping();
+    void SystemMessage(const QString &message);
 
     //spy
     void SpymodeReceivedMessage(const QString &strangerID, const QString &messageText);

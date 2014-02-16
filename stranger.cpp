@@ -11,7 +11,7 @@ Stranger::Stranger(QObject *parent) :
     QObject::connect(nam, SIGNAL(finished(QNetworkReply*)), this, SLOT(urlRequestFinished(QNetworkReply*)));
 }
 
-void Stranger::StartConversation(const QString language, const QString topics, const bool wantSpy) {
+void Stranger::StartConversation(const QString language, const QString topics, const bool wantSpy, const bool unmonitored) {
     EndConversation();
 
     //QString language="en";
@@ -23,6 +23,9 @@ void Stranger::StartConversation(const QString language, const QString topics, c
 
     if(wantSpy)
         requestUrlString+="&wantsspy=1";
+
+    if(unmonitored)
+        requestUrlString+="&group=unmon";
 
     QUrl requestUrl(requestUrlString);
     QNetworkRequest request(requestUrl);
@@ -124,6 +127,10 @@ bool Stranger::processEvent(QJsonArray eventArray) {
         emit StrangerStartsTyping();
     } else if(eventName == "stoppedTyping") {
         emit StrangerStopsTyping();
+    } else if(eventName == "antinudeBanned") {
+        emit SystemMessage(QString("Banned, going to unmonitored section"));
+        qDebug() << "We are banned, going to unmonitored";
+        this->StartConversation("en", "", false, true);
     } else {
         //search for "connected" event
         for(int i=0; i<eventArray.count(); i++) {
