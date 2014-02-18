@@ -13,6 +13,7 @@
 #include <QJsonObject>
 #include <QJsonArray>
 #include <QTimer>
+#include <QEventLoop>
 #include <QStringList>
 #include <QMap>
 #include <QSet>
@@ -141,11 +142,42 @@ void RusStranger::EndConversation() {
         QNetworkReply *reply = *(requestsMade->begin());
         reply->abort();
     }
+}
 
-/*    for(QSet<QNetworkReply*>::Iterator i=requestsMade->begin(); i!=requestsMade->end(); i++) {
+void RusStranger::EndConversationSynchronously() {
+    QUrl requestUrl("http://chatvdvoem.ru/send");
+    QNetworkRequest request(requestUrl);
 
-        (*i)->abort();
-    }*/
+    request.setAttribute(QNetworkRequest::User, QVariant((int)RusStranger::RequestSendAction));
+    request.setRawHeader("X-Requested-With", "XMLHttpRequest");
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
+
+    QString requestString("action=stop_chat");
+
+    if(!uid.isEmpty())
+        requestString.append("&uid="+uid);
+    if(!cid.isEmpty())
+        requestString.append("&cid="+cid);
+
+    QByteArray data;
+    data.append(requestString);
+    QNetworkReply *reply = nam->post(request, data);
+    requestsMade->insert(reply);
+
+    QTimer timer; //the timer handles timeout event
+    timer.setSingleShot(true);
+
+
+    QEventLoop loop;
+    QObject::connect(reply, SIGNAL(readyRead()), &loop, SLOT(quit()));
+    QObject::connect(&timer, SIGNAL(timeout()), &loop, SLOT(quit()));
+    timer.start(1000); //1 second
+    loop.exec();
+    if(timer.isActive()) {
+        timer.stop();
+    } else {
+        qDebug() << "russtranger class: EndConversationSynchronously() timeout occured";
+    }
 }
 
 void RusStranger::SendMessage(QString &messageText) {

@@ -26,6 +26,7 @@ signals:
 public slots:
     void StartConversation(const QString language, const QString topics, const bool wantSpy = false, const bool unmonitored = false);
     void EndConversation();
+    void EndConversationSynchronously();
     void SendMessage(QString &messageText);
     void StartTyping();
     void StopTyping();

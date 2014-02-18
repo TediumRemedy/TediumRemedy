@@ -48,6 +48,7 @@ signals:
 public slots:
     void StartConversation();
     void EndConversation();
+    void EndConversationSynchronously();
     void SendMessage(QString &messageText);
     void StartTyping();
     void StopTyping();

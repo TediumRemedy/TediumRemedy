@@ -3,6 +3,8 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
+#include <QTimer>
+#include <QEventLoop>
 
 Stranger::Stranger(QObject *parent) :
     QObject(parent)
@@ -42,6 +44,29 @@ void Stranger::EndConversation() {
     QNetworkReply *reply = nam->post(request, data);
 }
 
+void Stranger::EndConversationSynchronously() {
+    QUrl requestUrl("http://front2.omegle.com/disconnect");
+    QNetworkRequest request(requestUrl);
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
+    const QByteArray data = QByteArray("id="+QUrl::toPercentEncoding(clientID));
+
+    QNetworkReply *reply = nam->post(request, data);
+
+    QTimer timer; //the timer handles timeout event
+    timer.setSingleShot(true);
+
+
+    QEventLoop loop;
+    QObject::connect(reply, SIGNAL(readyRead()), &loop, SLOT(quit()));
+    QObject::connect(&timer, SIGNAL(timeout()), &loop, SLOT(quit()));
+    timer.start(1000); //1 second
+    loop.exec();
+    if(timer.isActive()) {
+        timer.stop();
+    } else {
+        qDebug() << "stranger class: EndConversationSynchronously() timeout occured";
+    }
+}
 
 void Stranger::SendMessage(QString &messageText) {
     QUrl requestUrl("http://front2.omegle.com/send");

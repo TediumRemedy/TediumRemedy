@@ -111,6 +111,9 @@ MainWindow::MainWindow(QWidget *parent) :
     QObject::connect(rusStranger, SIGNAL(StrangerStartsTyping()), this, SLOT(StrangerStartsTyping()));
     QObject::connect(rusStranger, SIGNAL(StrangerStopsTyping()), this, SLOT(StrangerStopsTyping()));
 
+
+
+
     chatMode = Russian;
     SwitchMode(); //switch it to regular
 
@@ -133,6 +136,14 @@ void MainWindow::TypingStopped() {
         rusStranger->StopTyping();
     else if(currentlyWorkingMode == AnsweringQuestions || chatMode == Regular)
         stranger->StopTyping();
+}
+
+void MainWindow::windowClosing() {
+    qDebug() << "Closing";
+
+    stranger->EndConversationSynchronously();
+    rusStranger->EndConversationSynchronously();
+    qDebug() << "Closed";
 }
 
 void MainWindow::SwitchMode() {

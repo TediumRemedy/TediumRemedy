@@ -39,6 +39,8 @@ public slots:
     void TypingStarted();
     void TypingStopped();
 
+    void windowClosing();
+
 private:
     void updateTypingLabelForSpymode();
 
