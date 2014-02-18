@@ -26,6 +26,7 @@ private:
 
     enum ChatMode {Regular, Spying, AnsweringQuestions, Russian};
     ChatMode chatMode;
+    ChatMode currentlyWorkingMode;
 
     QLabel *typingImage;
     QLabel *typingLabel;

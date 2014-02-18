@@ -122,16 +122,16 @@ void MainWindow::SystemMessage(const QString &message) {
 }
 
 void MainWindow::TypingStarted() {
-    if(chatMode == Russian)
+    if(currentlyWorkingMode == Russian)
         rusStranger->StartTyping();
-    else if(chatMode == AnsweringQuestions || chatMode == Regular)
+    else if(currentlyWorkingMode == AnsweringQuestions || chatMode == Regular)
         stranger->StartTyping();
 }
 
 void MainWindow::TypingStopped() {
-    if(chatMode == Russian)
+    if(currentlyWorkingMode == Russian)
         rusStranger->StopTyping();
-    else if(chatMode == AnsweringQuestions || chatMode == Regular)
+    else if(currentlyWorkingMode == AnsweringQuestions || chatMode == Regular)
         stranger->StopTyping();
 }
 
@@ -155,9 +155,10 @@ void MainWindow::enterPressed() {
     QString messageText = ui->typingBox->toPlainText();
     ui->chatlogBox->append(QString("<font color='")+YouColor+"'><b>You: </b></font>"+messageText);
     ui->typingBox->clear();
-    rusStranger->SendMessage(messageText);
-
-    //stranger->SendMessage(messageText);
+    if(currentlyWorkingMode == Russian)
+        rusStranger->SendMessage(messageText);
+    else if(currentlyWorkingMode == Regular || currentlyWorkingMode == AnsweringQuestions)
+        stranger->SendMessage(messageText);
 
     //sentMessageSound->play();
 }
@@ -173,13 +174,16 @@ void MainWindow::escapePressed() {
 
     //spy->StartConversation(ui->typingBox->toPlainText());
     if(chatMode == Regular)
-        stranger->StartConversation("en", "", false);
+        stranger->StartConversation("hm", "", false);
     else if(chatMode == Spying)
         spy->StartConversation(ui->typingBox->toPlainText());
     else if(chatMode == AnsweringQuestions)
         stranger->StartConversation("en", "", true);
     else if(chatMode == Russian)
         rusStranger->StartConversation();
+
+    currentlyWorkingMode = chatMode;
+
 }
 
 void MainWindow::ReceivedMessage(const QString &messageText) {

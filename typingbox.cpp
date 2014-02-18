@@ -7,6 +7,7 @@ TypingBox::TypingBox(QWidget *parent) :
     typingTimer = new QTimer(this);
     typingTimer->setSingleShot(true);
     typingTimer->setInterval(1000);
+    typingGoingOn = false;
     QObject::connect(typingTimer, SIGNAL(timeout()), this, SLOT(typingTimerFireAction()));
     QObject::connect(this, SIGNAL(textChanged()), this, SLOT(textChanged()));
 }

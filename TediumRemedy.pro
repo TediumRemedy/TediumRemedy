@@ -17,13 +17,15 @@ SOURCES += main.cpp\
     typingbox.cpp \
     stranger.cpp \
     spy.cpp \
-    russtranger.cpp
+    russtranger.cpp \
+    chinastranger.cpp
 
 HEADERS  += mainwindow.h \
     typingbox.h \
     stranger.h \
     spy.h \
-    russtranger.h
+    russtranger.h \
+    chinastranger.h
 
 FORMS    += mainwindow.ui
 

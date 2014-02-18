@@ -60,7 +60,7 @@ void Stranger::StartTyping() {
 }
 
 void Stranger::StopTyping() {
-    QUrl requestUrl("http://front2.omegle.com/stopTyping");
+    QUrl requestUrl("http://front2.omegle.com/stoppedtyping");
     QNetworkRequest request(requestUrl);
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
     const QByteArray data = QByteArray("id="+QUrl::toPercentEncoding(clientID));
