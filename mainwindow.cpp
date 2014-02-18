@@ -185,7 +185,7 @@ void MainWindow::escapePressed() {
 
     //spy->StartConversation(ui->typingBox->toPlainText());
     if(chatMode == Regular)
-        stranger->StartConversation("hm", "", false);
+        stranger->StartConversation("en", "", false);
     else if(chatMode == Spying)
         spy->StartConversation(ui->typingBox->toPlainText());
     else if(chatMode == AnsweringQuestions)
