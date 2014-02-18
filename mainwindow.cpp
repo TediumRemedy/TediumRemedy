@@ -19,9 +19,9 @@ const char YouColor[] = "#8888ff";
 
 
 void PlaySound() {
-    //QMediaPlayer *p = new QMediaPlayer(0);
-    //p->setMedia(QMediaContent(QUrl::fromLocalFile("/home/mike/Lana.mp3")));
-    //p->play();
+    QMediaPlayer *p = new QMediaPlayer(0);
+    p->setMedia(QMediaContent(QUrl::fromLocalFile("/home/mike/TediumRemedy/connected.wav")));
+    p->play();
 }
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -29,8 +29,10 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
 
-    PlaySound();
+    //PlaySound();
     ui->setupUi(this);
+
+    //return;
 
     /*QHBoxLayout *dockLayout = new QHBoxLayout(this);
     QComboBox *b = new QComboBox(this);
@@ -164,6 +166,10 @@ void MainWindow::escapePressed() {
     ui->chatlogBox->clear();
     typingLabel->setText("");
     strangerTypingMask = 0;
+
+    stranger->EndConversation();
+    spy->EndConversation();
+    rusStranger->EndConversation();
 
     //spy->StartConversation(ui->typingBox->toPlainText());
     if(chatMode == Regular)

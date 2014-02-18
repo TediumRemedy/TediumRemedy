@@ -15,6 +15,7 @@
 #include <QTimer>
 #include <QStringList>
 #include <QMap>
+#include <QSet>
 
 /*
 chatvdvoem.ru protocol
@@ -124,6 +125,7 @@ wait_new_opponent
 
 
 void RusStranger::StartConversation() {
+    EndConversation();
     uid="";
     cid="";
     rpId="";
@@ -135,6 +137,15 @@ void RusStranger::StartConversation() {
 
 void RusStranger::EndConversation() {
     SendAction("stop_chat");
+    while(requestsMade->count() > 0) {
+        QNetworkReply *reply = *(requestsMade->begin());
+        reply->abort();
+    }
+
+/*    for(QSet<QNetworkReply*>::Iterator i=requestsMade->begin(); i!=requestsMade->end(); i++) {
+
+        (*i)->abort();
+    }*/
 }
 
 void RusStranger::SendMessage(QString &messageText) {
@@ -175,10 +186,13 @@ void RusStranger::SendAction(QString actionName, QMap<QString, QString> params) 
     QByteArray data;
     data.append(requestString);
     QNetworkReply *reply = nam->post(request, data);
+    requestsMade->insert(reply);
 }
 
 RusStranger::RusStranger(QObject *parent) {
     nam = new QNetworkAccessManager(this);
+    requestsMade = new QSet<QNetworkReply*>();
+
     QObject::connect(nam, SIGNAL(finished(QNetworkReply*)), this, SLOT(urlRequestFinished(QNetworkReply*)));
 }
 
@@ -193,6 +207,7 @@ void RusStranger::requestChatKey() {
 
     //const QByteArray data;
     QNetworkReply *reply = nam->get(request);
+    requestsMade->insert(reply);
 }
 
 void RusStranger::requestUid() {
@@ -207,7 +222,7 @@ void RusStranger::requestUid() {
     QByteArray data;
     data.append(requestString);
     QNetworkReply *reply = nam->post(request, data);
-
+    requestsMade->insert(reply);
 }
 
 void RusStranger::waitOpponentPoll() {
@@ -225,6 +240,7 @@ void RusStranger::waitOpponentPoll() {
     QByteArray data;
     data.append(requestString);
     QNetworkReply *reply = nam->post(request, data);
+    requestsMade->insert(reply);
 }
 
 void RusStranger::waitOpponentTimerHandler() {
@@ -244,6 +260,7 @@ void RusStranger::setReady() {
     QByteArray data;
     data.append(requestString);
     QNetworkReply *reply = nam->post(request, data);
+    requestsMade->insert(reply);
 }
 
 void RusStranger::getIdentifier() {
@@ -267,6 +284,7 @@ void RusStranger::getIdentifier() {
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
 
     QNetworkReply *reply = nam->get(request);
+    requestsMade->insert(reply);
 }
 
 QString decodeUnicode(QString unicodeCypher) {
@@ -280,6 +298,14 @@ QString decodeUnicode(QString unicodeCypher) {
 }
 
 void RusStranger::urlRequestFinished(QNetworkReply *reply) {
+    qDebug() << "REQUESTSMADE: " << requestsMade->count();
+    requestsMade->remove(reply);
+
+    if(reply->error() != 0) {
+        delete reply;
+        return;
+    }
+
     QByteArray replyData = reply->readAll();
     RusStranger::RequestType requestType = (RusStranger::RequestType)(reply->request().attribute(QNetworkRequest::User).toInt());
     //qDebug() << reply->request().attribute(QNetworkRequest::User);
@@ -371,9 +397,12 @@ void RusStranger::urlRequestFinished(QNetworkReply *reply) {
                     emit ReceivedMessage(decodeUnicode(messageString));
                 }
             } else if(actionString == "stop_chat") {
-                qDebug() << "Stranger disconnected";
-                emit StrangerDisconnected();
-                return; //no need to getIdentifier() again. Coversation is over
+                QString messageSender = document.array()[0].toObject()["data"].toObject()["user"].toString();
+                if(messageSender == "stranger") {
+                    qDebug() << "Stranger disconnected";
+                    emit StrangerDisconnected();
+                    return; //no need to getIdentifier() again. Coversation is over
+                }
             } else if(actionString == "ping") {
                 qDebug() << "Ping";
             } else {

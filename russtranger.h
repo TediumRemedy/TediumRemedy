@@ -1,6 +1,7 @@
 #include <QObject>
 #include <QNetworkReply>
 #include <QNetworkAccessManager>
+#include <QSet>
 
 #ifndef CVSTRANGER_H
 #define CVSTRANGER_H
@@ -26,6 +27,7 @@ private:
     enum RequestType {ErroneousType, RequestChatKey, RequestUid, RequestWaitOpponent, RequestSetReady, RequestGetIdentifier, RequestSendAction};
 
     QNetworkAccessManager *nam;
+    QSet<QNetworkReply*> *requestsMade;
 
     QString chatKey;
     QString uid;
