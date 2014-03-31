@@ -32,3 +32,16 @@ QSizeGrip {
     width: 16px;
     height: 16px;
 }
+
+/*QScrollBar:vertical {
+
+          border: 2px solid grey;
+
+          background: white;
+
+          width: 15px;
+
+          margin: 22px 0 22px 0;
+
+      }
+*/

@@ -7,8 +7,9 @@
 #include <QtNetwork/QNetworkRequest>
 #include <QtNetwork/QNetworkReply>
 #include <QJsonArray>
+#include "cometclient.h"
 
-class Spy : public QObject
+class Spy : public CometClient
 {
     Q_OBJECT
 public:
@@ -26,14 +27,15 @@ public slots:
     void EndConversation();
 
 private:
+    enum RequestType {ErrorRequest, StartRequest, PollEventsRequest, EndConversationRequest};
+
     void pollNewEvents();
     bool processEvent(QJsonArray eventArray); //returns false if the conversation has ended
 
-    QNetworkAccessManager *nam;
     QString clientID;
 
-private slots:
-    void urlRequestFinished(QNetworkReply *reply);
+    virtual void requestFinished(int requestIdentifier, const QString &responseString);
+
 };
 
 #endif // SPY_H

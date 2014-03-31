@@ -137,47 +137,14 @@ void RusStranger::StartConversation() {
 }
 
 void RusStranger::EndConversation() {
-    SendAction("stop_chat");
-    while(requestsMade->count() > 0) {
-        QNetworkReply *reply = *(requestsMade->begin());
-        reply->abort();
-    }
-}
-
-void RusStranger::EndConversationSynchronously() {
-    QUrl requestUrl("http://chatvdvoem.ru/send");
-    QNetworkRequest request(requestUrl);
-
-    request.setAttribute(QNetworkRequest::User, QVariant((int)RusStranger::RequestSendAction));
-    request.setRawHeader("X-Requested-With", "XMLHttpRequest");
-    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
-
     QString requestString("action=stop_chat");
-
     if(!uid.isEmpty())
         requestString.append("&uid="+uid);
     if(!cid.isEmpty())
         requestString.append("&cid="+cid);
 
-    QByteArray data;
-    data.append(requestString);
-    QNetworkReply *reply = nam->post(request, data);
-    requestsMade->insert(reply);
-
-    QTimer timer; //the timer handles timeout event
-    timer.setSingleShot(true);
-
-
-    QEventLoop loop;
-    QObject::connect(reply, SIGNAL(readyRead()), &loop, SLOT(quit()));
-    QObject::connect(&timer, SIGNAL(timeout()), &loop, SLOT(quit()));
-    timer.start(1000); //1 second
-    loop.exec();
-    if(timer.isActive()) {
-        timer.stop();
-    } else {
-        qDebug() << "russtranger class: EndConversationSynchronously() timeout occured";
-    }
+    this->postSynchronously("http://chatvdvoem.ru/send", requestString, RequestSendAction);
+    cancelAllRequests();
 }
 
 void RusStranger::SendMessage(QString &messageText) {
@@ -195,15 +162,7 @@ void RusStranger::StopTyping() {
 }
 
 
-
 void RusStranger::SendAction(QString actionName, QMap<QString, QString> params) {
-    QUrl requestUrl("http://chatvdvoem.ru/send");
-    QNetworkRequest request(requestUrl);
-
-    request.setAttribute(QNetworkRequest::User, QVariant((int)RusStranger::RequestSendAction));
-    request.setRawHeader("X-Requested-With", "XMLHttpRequest");
-    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
-
     QString requestString("action="+actionName);
 
     for(QMap<QString, QString>::Iterator i = params.begin(); i!=params.end(); i++) {
@@ -215,64 +174,27 @@ void RusStranger::SendAction(QString actionName, QMap<QString, QString> params) 
     if(!cid.isEmpty())
         requestString.append("&cid="+cid);
 
-    QByteArray data;
-    data.append(requestString);
-    QNetworkReply *reply = nam->post(request, data);
-    requestsMade->insert(reply);
+    post("http://chatvdvoem.ru/send", requestString, RequestSendAction);
 }
 
 RusStranger::RusStranger(QObject *parent) {
-    nam = new QNetworkAccessManager(this);
-    requestsMade = new QSet<QNetworkReply*>();
 
-    QObject::connect(nam, SIGNAL(finished(QNetworkReply*)), this, SLOT(urlRequestFinished(QNetworkReply*)));
 }
 
 void RusStranger::requestChatKey() {
     uint currentTimestamp = QDateTime::currentDateTime().toTime_t();
-    QUrl requestUrl("http://chatvdvoem.ru/key?_="+QString::number(currentTimestamp));
-    QNetworkRequest request(requestUrl);
-
-    request.setAttribute(QNetworkRequest::User, QVariant((int)RusStranger::RequestChatKey));
-    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
-    //qDebug() << request.attribute(QNetworkRequest::User);
-
-    //const QByteArray data;
-    QNetworkReply *reply = nam->get(request);
-    requestsMade->insert(reply);
+    get("http://chatvdvoem.ru/key?_="+QString::number(currentTimestamp), RequestChatKey);
 }
 
 void RusStranger::requestUid() {
-    QUrl requestUrl("http://chatvdvoem.ru/send");
-    QNetworkRequest request(requestUrl);
-
-    request.setAttribute(QNetworkRequest::User, QVariant((int)RusStranger::RequestUid));
-    request.setRawHeader("X-Requested-With", "XMLHttpRequest");
-    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
-
-    QString requestString("action=get_uid");
-    QByteArray data;
-    data.append(requestString);
-    QNetworkReply *reply = nam->post(request, data);
-    requestsMade->insert(reply);
+    post("http://chatvdvoem.ru/send", "action=get_uid", RequestUid);
 }
 
 void RusStranger::waitOpponentPoll() {
     if(!cid.isEmpty())
         return;
 
-    QUrl requestUrl("http://chatvdvoem.ru/send");
-    QNetworkRequest request(requestUrl);
-
-    request.setAttribute(QNetworkRequest::User, QVariant((int)RusStranger::RequestWaitOpponent));
-    request.setRawHeader("X-Requested-With", "XMLHttpRequest");
-    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
-
-    QString requestString("action=wait_opponent&key="+chatKey+"&uid="+uid);
-    QByteArray data;
-    data.append(requestString);
-    QNetworkReply *reply = nam->post(request, data);
-    requestsMade->insert(reply);
+    post("http://chatvdvoem.ru/send", "action=wait_opponent&key="+chatKey+"&uid="+uid, RequestWaitOpponent);
 }
 
 void RusStranger::waitOpponentTimerHandler() {
@@ -281,42 +203,19 @@ void RusStranger::waitOpponentTimerHandler() {
 
 void RusStranger::setReady() {
     //uid=13916278117fd2b3&cid=1391629390d08d64&key=k13916293891083602879b1c143-1-1-1-1-1-1-1&action=set_ready
-    QUrl requestUrl("http://chatvdvoem.ru/send");
-    QNetworkRequest request(requestUrl);
-
-    request.setAttribute(QNetworkRequest::User, QVariant((int)RusStranger::RequestSetReady));
-    request.setRawHeader("X-Requested-With", "XMLHttpRequest");
-    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
-
-    QString requestString("action=set_ready&key="+chatKey+"&uid="+uid+"&cid="+cid);
-    QByteArray data;
-    data.append(requestString);
-    QNetworkReply *reply = nam->post(request, data);
-    requestsMade->insert(reply);
+    post("http://chatvdvoem.ru/send", "action=set_ready&key="+chatKey+"&uid="+uid+"&cid="+cid, RequestSetReady);
 }
 
 void RusStranger::getIdentifier() {
     //http://rp2.chatvdvoem.ru/?identifier=1391702235.98321740737:11391701805786a38&ncrnd=1391702241646
     //Referer: http://rp2.chatvdvoem.ru/?identifier=IFRAME&HOST=chatvdvoem.ru&version=1.32
 
-    /*static bool started = false;
-    if(started)
-        return;
-    started = true;*/
-
     qDebug() << "Polling realplexor";
     if(uid.isEmpty())
         qDebug() << "getIdentifier: uid is empty";
     QString rpIdentifier = rpId.isEmpty() ? "1"+uid : rpId;
-    QUrl requestUrl(QString("http://rp1.chatvdvoem.ru/?identifier=")+rpIdentifier+"&ncrnd="+QString::number(QDateTime::currentMSecsSinceEpoch()));
-    QNetworkRequest request(requestUrl);
 
-    request.setAttribute(QNetworkRequest::User, QVariant((int)RusStranger::RequestGetIdentifier));
-    //request.setRawHeader("X-Requested-With", "XMLHttpRequest");
-    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
-
-    QNetworkReply *reply = nam->get(request);
-    requestsMade->insert(reply);
+    get(QString("http://rp1.chatvdvoem.ru/?identifier=")+rpIdentifier+"&ncrnd="+QString::number(QDateTime::currentMSecsSinceEpoch()), RequestGetIdentifier);
 }
 
 QString decodeUnicode(QString unicodeCypher) {
@@ -329,22 +228,9 @@ QString decodeUnicode(QString unicodeCypher) {
     return str;
 }
 
-void RusStranger::urlRequestFinished(QNetworkReply *reply) {
-    qDebug() << "REQUESTSMADE: " << requestsMade->count();
-    requestsMade->remove(reply);
-
-    if(reply->error() != 0) {
-        delete reply;
-        return;
-    }
-
-    QByteArray replyData = reply->readAll();
-    RusStranger::RequestType requestType = (RusStranger::RequestType)(reply->request().attribute(QNetworkRequest::User).toInt());
-    //qDebug() << reply->request().attribute(QNetworkRequest::User);
-    delete reply;
-
-    QString replyText(replyData);
-
+void RusStranger::requestFinished(int requestIdentifier, const QString &responseString) {
+    int requestType = requestIdentifier;
+    const QString &replyText = responseString;
     if(requestType == RusStranger::RequestChatKey) {
             QScriptEngine jsInterpreter;
             QScriptValue returnVal = jsInterpreter.evaluate(replyText + "; chat_key");
@@ -359,7 +245,7 @@ void RusStranger::urlRequestFinished(QNetworkReply *reply) {
         //qDebug() << "Here's uid request reponse: " << replyText;
 
         QJsonParseError parseError;
-        QJsonDocument document = QJsonDocument::fromJson(replyData, &parseError);
+        QJsonDocument document = QJsonDocument::fromJson(replyText.toUtf8(), &parseError);
         if(parseError.error != QJsonParseError::NoError)
             return; //error parsing json object
 
@@ -383,7 +269,7 @@ void RusStranger::urlRequestFinished(QNetworkReply *reply) {
         qDebug() << "Got get identifier response: " << replyText;
 
         QJsonParseError parseError;
-        QJsonDocument document = QJsonDocument::fromJson(replyData, &parseError);
+        QJsonDocument document = QJsonDocument::fromJson(replyText.toUtf8(), &parseError);
         if(parseError.error != QJsonParseError::NoError) {
             qDebug() << "Error parsing json";
             return; //error parsing json object
@@ -443,14 +329,6 @@ void RusStranger::urlRequestFinished(QNetworkReply *reply) {
 
             getIdentifier();
         }
-
-
-            //clientID = document.object()["clientID"].toString();
-            //qDebug() << "Got client id: " << clientID;
-            //pollNewEvents();
-
-
-
     } else if(requestType == RusStranger::RequestSetReady) {
         qDebug () << "set_ready has been sent, got response: " << replyText;
         //getIdentifier();

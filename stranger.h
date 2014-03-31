@@ -7,8 +7,9 @@
 #include <QtNetwork/QNetworkRequest>
 #include <QtNetwork/QNetworkReply>
 #include <QJsonArray>
+#include "cometclient.h"
 
-class Stranger : public QObject
+class Stranger : public CometClient
 {
     Q_OBJECT
 public:
@@ -26,20 +27,21 @@ signals:
 public slots:
     void StartConversation(const QString language, const QString topics, const bool wantSpy = false, const bool unmonitored = false);
     void EndConversation();
-    void EndConversationSynchronously();
     void SendMessage(QString &messageText);
     void StartTyping();
     void StopTyping();
 
 private:
+    enum RequestType {UnknownRequest, StartRequest, DisconnectRequest, SendMessageRequest,
+                      StartTypingRequest, StopTypingRequest, RequestPollEvents};
+
     void pollNewEvents();
     bool processEvent(QJsonArray eventArray); //returns false if the conversation has ended
 
-    QNetworkAccessManager *nam;
     QString clientID;
 
-private slots:
-    void urlRequestFinished(QNetworkReply *reply);
+protected:
+    void requestFinished(int requestIdentifier, const QString &responseString);
 };
 
 #endif // STRANGER_H

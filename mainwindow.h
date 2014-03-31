@@ -1,6 +1,17 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+/*
+
+  Convenient qtcreator shortcuts:
+
+  Ctrl+K - quick project file search
+  Alt+Enter - generate implementation/declaration
+  F4 - switch between h/cpp
+  F2 - jump to declaration
+
+*/
+
 #include <QMainWindow>
 #include "stranger.h"
 #include "spy.h"

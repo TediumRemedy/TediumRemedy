@@ -5,57 +5,19 @@
 #include <QJsonArray>
 
 Spy::Spy(QObject *parent) :
-    QObject(parent)
+    CometClient(parent)
 {
-    nam = new QNetworkAccessManager(this);
-    QObject::connect(nam, SIGNAL(finished(QNetworkReply*)), this, SLOT(urlRequestFinished(QNetworkReply*)));
+
 }
 
 void Spy::StartConversation(QString questionToDiscuss) {
     EndConversation();
 
-    QUrl requestUrl("http://front7.omegle.com/start?rcs=1&firstevents=1&spid=&randid=HNMESDAE&ask="+questionToDiscuss+"&lang=en");
-    QNetworkRequest request(requestUrl);
-    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
-    const QByteArray data;
-    QNetworkReply *reply = nam->post(request, data);
-}
-void Spy::urlRequestFinished(QNetworkReply *reply) {
-    QByteArray replyData = reply->readAll();
-    delete reply;
-
-    QString replyText(replyData);
-    qDebug() << replyText;
-
-    QJsonParseError parseError;
-    QJsonDocument document = QJsonDocument::fromJson(replyData, &parseError);
-    if(parseError.error != QJsonParseError::NoError)
-        return; //error parsing json object
-
-
-    if(document.isObject() && document.object().find("clientID")!=document.object().end()) {
-        //we received a clientID
-        clientID = document.object()["clientID"].toString();
-        qDebug() << "Got client id: " << clientID;
-        pollNewEvents();
-    } else if(document.isArray() && !document.array().isEmpty()) {
-        //first element of this array should be an array of [command, param1, ...]
-
-        if(document.array()[0].isArray()) {
-            QJsonArray commandWithArgs = document.array()[0].toArray();
-            if(!commandWithArgs.isEmpty()) {
-                if(processEvent(document.array()))
-                    pollNewEvents();
-            }
-        }
-    }
+    this->post("http://front7.omegle.com/start?rcs=1&firstevents=1&spid=&randid=HNMESDAE&ask="+questionToDiscuss+"&lang=en", "", StartRequest);
 }
 
 void Spy::pollNewEvents() {
-    QUrl requestUrl("http://front7.omegle.com/events");
-    QNetworkRequest request(requestUrl);
-    const QByteArray data = QByteArray("id=" + QUrl::toPercentEncoding(clientID));
-    QNetworkReply *reply = nam->post(request, data);
+    post("http://front7.omegle.com/events", "id=" + QUrl::toPercentEncoding(clientID), PollEventsRequest);
 }
 
 bool Spy::processEvent(QJsonArray eventArray) {
@@ -84,8 +46,31 @@ bool Spy::processEvent(QJsonArray eventArray) {
 }
 
 void Spy::EndConversation() {
-    QUrl requestUrl("http://front7.omegle.com/disconnect");
-    QNetworkRequest request(requestUrl);
-    const QByteArray data = QByteArray("id="+QUrl::toPercentEncoding(clientID));
-    QNetworkReply *reply = nam->post(request, data);
+    postSynchronously("http://front7.omegle.com/disconnect", "id="+QUrl::toPercentEncoding(clientID), EndConversationRequest);
+    this->cancelAllRequests();
+}
+
+void Spy::requestFinished(int requestIdentifier, const QString &responseString) {
+    QJsonParseError parseError;
+    QJsonDocument document = QJsonDocument::fromJson(responseString.toUtf8(), &parseError);
+    if(parseError.error != QJsonParseError::NoError)
+        return; //error parsing json object
+
+
+    if(document.isObject() && document.object().find("clientID")!=document.object().end()) {
+        //we received a clientID
+        clientID = document.object()["clientID"].toString();
+        qDebug() << "Got client id: " << clientID;
+        pollNewEvents();
+    } else if(document.isArray() && !document.array().isEmpty()) {
+        //first element of this array should be an array of [command, param1, ...]
+
+        if(document.array()[0].isArray()) {
+            QJsonArray commandWithArgs = document.array()[0].toArray();
+            if(!commandWithArgs.isEmpty()) {
+                if(processEvent(document.array()))
+                    pollNewEvents();
+            }
+        }
+    }
 }

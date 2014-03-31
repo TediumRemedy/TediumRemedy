@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui network multimedia script
+QT       += core gui network multimedia script phonon4qt5
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -18,14 +18,16 @@ SOURCES += main.cpp\
     stranger.cpp \
     spy.cpp \
     russtranger.cpp \
-    chinastranger.cpp
+    chinastranger.cpp \
+    cometclient.cpp
 
 HEADERS  += mainwindow.h \
     typingbox.h \
     stranger.h \
     spy.h \
     russtranger.h \
-    chinastranger.h
+    chinastranger.h \
+    cometclient.h
 
 FORMS    += mainwindow.ui
 

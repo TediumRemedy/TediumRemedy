@@ -15,7 +15,7 @@ TypingBox::TypingBox(QWidget *parent) :
 void TypingBox::typingTimerFireAction() {
     typingGoingOn = false;
     emit typingStopped();
-    qDebug() << "Typing stopped";
+    //qDebug() << "Typing stopped";
 }
 
 void TypingBox::textChanged() {
@@ -23,7 +23,7 @@ void TypingBox::textChanged() {
     if(!typingGoingOn) {
         typingGoingOn = true;
         emit typingStarted();
-        qDebug() << "Typing started";
+        //qDebug() << "Typing started";
     } else {
         //do nothing
     }

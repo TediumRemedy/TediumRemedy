@@ -12,13 +12,38 @@
 
 #include "russtranger.h"
 
+#include "cometclient.h"
+
+#include <phonon4qt5/phonon/AudioOutput>
+#include <phonon4qt5/phonon/MediaObject>
+#include <phonon4qt5/phonon/MediaSource>
 
 const char SysMsgColor[] = "#888888";
 const char StrangerColor[] = "#ff8888";
 const char YouColor[] = "#8888ff";
 
+#include <QAudioDeviceInfo>
+#include <QAudio>
 
 void PlaySound() {
+    QSound::play("/home/mike/TediumRemedy/connected.wav");
+return;
+
+    Phonon::MediaObject mo;
+    Phonon::AudioOutput ao;
+    createPath(&mo,&ao);
+    mo.setCurrentSource(Phonon::MediaSource("/home/mike/TediumRemedy/connected1.wav")); // insert your multimedia file here
+    mo.play();
+    //return;
+
+    QTextStream out(stdout);
+    out << "START-OUTPUT" << endl;
+    QList<QAudioDeviceInfo> outputList = QAudioDeviceInfo::availableDevices(QAudio::AudioOutput);
+    foreach(QAudioDeviceInfo outputInfo, outputList) {
+       out << outputInfo.deviceName() << endl;
+    }
+    out << "END-OUTPUT" << endl;
+
     QMediaPlayer *p = new QMediaPlayer(0);
     p->setMedia(QMediaContent(QUrl::fromLocalFile("/home/mike/TediumRemedy/connected.wav")));
     p->play();
@@ -30,9 +55,20 @@ MainWindow::MainWindow(QWidget *parent) :
 {
 
     //PlaySound();
+    //return;
     ui->setupUi(this);
 
-    //return;
+
+    /*CometClient *c = new CometClient(this);
+
+    c->get("http://gggoogle.ru", 6);
+    c->get("http://gggoogle.ru", 7);
+    c->get("http://google.ru", 8);
+    c->get("http://googleq.ru", 9);
+
+    c->cancelAllRequests();
+    return;
+*/
 
     /*QHBoxLayout *dockLayout = new QHBoxLayout(this);
     QComboBox *b = new QComboBox(this);
@@ -141,8 +177,8 @@ void MainWindow::TypingStopped() {
 void MainWindow::windowClosing() {
     qDebug() << "Closing";
 
-    stranger->EndConversationSynchronously();
-    rusStranger->EndConversationSynchronously();
+    stranger->EndConversation();
+    rusStranger->EndConversation();
     qDebug() << "Closed";
 }
 

@@ -2,11 +2,12 @@
 #include <QNetworkReply>
 #include <QNetworkAccessManager>
 #include <QSet>
+#include "cometclient.h"
 
 #ifndef CVSTRANGER_H
 #define CVSTRANGER_H
 
-class RusStranger : public QObject
+class RusStranger : public CometClient
 {
     Q_OBJECT
 public:
@@ -26,16 +27,18 @@ public:
 private:
     enum RequestType {ErroneousType, RequestChatKey, RequestUid, RequestWaitOpponent, RequestSetReady, RequestGetIdentifier, RequestSendAction};
 
-    QNetworkAccessManager *nam;
-    QSet<QNetworkReply*> *requestsMade;
+    //QNetworkAccessManager *nam;
+    //QSet<QNetworkReply*> *requestsMade;
 
     QString chatKey;
     QString uid;
     QString cid;
     QString rpId;
 
+    virtual void requestFinished(int requestIdentifier, const QString &responseString);
+
 private slots:
-    void urlRequestFinished(QNetworkReply *reply);
+    //void urlRequestFinished(QNetworkReply *reply);
     void waitOpponentTimerHandler();
 
 signals:
@@ -48,7 +51,7 @@ signals:
 public slots:
     void StartConversation();
     void EndConversation();
-    void EndConversationSynchronously();
+    //void EndConversationSynchronously();
     void SendMessage(QString &messageText);
     void StartTyping();
     void StopTyping();

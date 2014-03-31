@@ -7,10 +7,9 @@
 #include <QEventLoop>
 
 Stranger::Stranger(QObject *parent) :
-    QObject(parent)
+    CometClient(parent)
 {
-    nam = new QNetworkAccessManager(this);
-    QObject::connect(nam, SIGNAL(finished(QNetworkReply*)), this, SLOT(urlRequestFinished(QNetworkReply*)));
+
 }
 
 void Stranger::StartConversation(const QString language, const QString topics, const bool wantSpy, const bool unmonitored) {
@@ -29,78 +28,33 @@ void Stranger::StartConversation(const QString language, const QString topics, c
     if(unmonitored)
         requestUrlString+="&group=unmon";
 
-    QUrl requestUrl(requestUrlString);
-    QNetworkRequest request(requestUrl);
-    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
-    const QByteArray data;
-    QNetworkReply *reply = nam->post(request, data);
+    post(requestUrlString, "", StartRequest);
 }
 
 void Stranger::EndConversation() {
-    QUrl requestUrl("http://front2.omegle.com/disconnect");
-    QNetworkRequest request(requestUrl);
-    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
-    const QByteArray data = QByteArray("id="+QUrl::toPercentEncoding(clientID));
-    QNetworkReply *reply = nam->post(request, data);
-}
-
-void Stranger::EndConversationSynchronously() {
-    QUrl requestUrl("http://front2.omegle.com/disconnect");
-    QNetworkRequest request(requestUrl);
-    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
-    const QByteArray data = QByteArray("id="+QUrl::toPercentEncoding(clientID));
-
-    QNetworkReply *reply = nam->post(request, data);
-
-    QTimer timer; //the timer handles timeout event
-    timer.setSingleShot(true);
-
-
-    QEventLoop loop;
-    QObject::connect(reply, SIGNAL(readyRead()), &loop, SLOT(quit()));
-    QObject::connect(&timer, SIGNAL(timeout()), &loop, SLOT(quit()));
-    timer.start(1000); //1 second
-    loop.exec();
-    if(timer.isActive()) {
-        timer.stop();
-    } else {
-        qDebug() << "stranger class: EndConversationSynchronously() timeout occured";
-    }
+    //post("http://front2.omegle.com/disconnect", "id="+QUrl::toPercentEncoding(clientID), DisconnectRequest);
+    this->postSynchronously("http://front2.omegle.com/disconnect", "id="+QUrl::toPercentEncoding(clientID), DisconnectRequest);
+    cancelAllRequests();
 }
 
 void Stranger::SendMessage(QString &messageText) {
-    QUrl requestUrl("http://front2.omegle.com/send");
-    QNetworkRequest request(requestUrl);
-    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
-    const QByteArray data = QByteArray("msg=" + QUrl::toPercentEncoding(messageText) +"&id="+QUrl::toPercentEncoding(clientID));
-    QNetworkReply *reply = nam->post(request, data);
+    post("http://front2.omegle.com/send", "msg=" + QUrl::toPercentEncoding(messageText) +"&id="+QUrl::toPercentEncoding(clientID), SendMessageRequest);
 }
 
 void Stranger::StartTyping() {
-    QUrl requestUrl("http://front2.omegle.com/typing");
-    QNetworkRequest request(requestUrl);
-    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
-    const QByteArray data = QByteArray("id="+QUrl::toPercentEncoding(clientID));
-    QNetworkReply *reply = nam->post(request, data);
+    post("http://front2.omegle.com/typing", "id="+QUrl::toPercentEncoding(clientID), StartTypingRequest);
 }
 
 void Stranger::StopTyping() {
-    QUrl requestUrl("http://front2.omegle.com/stoppedtyping");
-    QNetworkRequest request(requestUrl);
-    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
-    const QByteArray data = QByteArray("id="+QUrl::toPercentEncoding(clientID));
-    QNetworkReply *reply = nam->post(request, data);
+    post("http://front2.omegle.com/stoppedtyping", "id="+QUrl::toPercentEncoding(clientID), StopTypingRequest);
 }
 
-void Stranger::urlRequestFinished(QNetworkReply *reply) {
-    QByteArray replyData = reply->readAll();
-    delete reply;
-
-    QString replyText(replyData);
+void Stranger::requestFinished(int requestIdentifier, const QString &responseString) {
+    QString replyText(responseString);
     //qDebug() << replyText;
 
     QJsonParseError parseError;
-    QJsonDocument document = QJsonDocument::fromJson(replyData, &parseError);
+    QJsonDocument document = QJsonDocument::fromJson(replyText.toUtf8(), &parseError);
     if(parseError.error != QJsonParseError::NoError)
         return; //error parsing json object
 
@@ -132,11 +86,7 @@ void Stranger::urlRequestFinished(QNetworkReply *reply) {
 }
 
 void Stranger::pollNewEvents() {
-    QUrl requestUrl("http://front2.omegle.com/events");
-    QNetworkRequest request(requestUrl);
-    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
-    const QByteArray data = QByteArray("id=" + QUrl::toPercentEncoding(clientID));
-    QNetworkReply *reply = nam->post(request, data);
+    post("http://front2.omegle.com/events", "id=" + QUrl::toPercentEncoding(clientID), RequestPollEvents);
 }
 
 bool Stranger::processEvent(QJsonArray eventArray) {
