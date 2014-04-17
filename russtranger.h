@@ -25,6 +25,8 @@ public:
     void SendAction(QString actionName, QMap<QString, QString> params = QMap<QString, QString>());
 
 private:
+    int waitOpponentPollCounter;
+
     enum RequestType {ErroneousType, RequestChatKey, RequestUid, RequestWaitOpponent, RequestSetReady, RequestGetIdentifier, RequestSendAction};
 
     QString chatKey;

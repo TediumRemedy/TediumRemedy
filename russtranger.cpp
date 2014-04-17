@@ -200,14 +200,23 @@ void RusStranger::requestUid() {
 }
 
 void RusStranger::waitOpponentPoll() {
-    if(!cid.isEmpty())
+    if(!cid.isEmpty()) {
+        qDebug() << "waitOpponentPoll: cid is empty, can't poll!";
         return;
+    }
+
+    waitOpponentPollCounter++;
 
     post("http://chatvdvoem.ru/send", "action=wait_opponent&key="+chatKey+"&uid="+uid, RequestWaitOpponent);
 }
 
 void RusStranger::waitOpponentTimerHandler() {
-    waitOpponentPoll(); //...delete timer!!!
+    if(waitOpponentPollCounter >= 5) {
+        qDebug("waitOpponentPollCounter is 5, giving up polling. Restarting chat");
+        StartConversation();
+    } else {
+        waitOpponentPoll();
+    }
 }
 
 void RusStranger::setReady() {
@@ -266,6 +275,7 @@ void RusStranger::requestFinished(int requestIdentifier, const QString &response
             getIdentifier();
 
             emit WaitingForStranger();
+            waitOpponentPollCounter = 0;
             waitOpponentPoll();
         }
     } else if(requestType == RusStranger::RequestWaitOpponent) {

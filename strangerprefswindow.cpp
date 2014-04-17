@@ -10,12 +10,6 @@ StrangerPrefsWindow::StrangerPrefsWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    QFile stylesheetFile(":/resources/stylesheet.qss");
-    if(!stylesheetFile.open(QFile::ReadOnly)) {
-        qDebug() << "Error opening file " << stylesheetFile.error();
-    }
-    QString stylesheetString = QLatin1String(stylesheetFile.readAll());
-    setStyleSheet(stylesheetString);
 
     //languages.push_back(QPair<QString, QString>("1", "2"));
     languages.push_back(QPair<QString, QString>("Afrikaans", "af"));

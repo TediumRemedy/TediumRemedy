@@ -121,8 +121,8 @@ MainWindow::MainWindow(QWidget *parent) :
     setStyleSheet(stylesheetString);
 */
 
-    nightColoringMode = true;
-    switchColoringMode(); //switch to day coloring mode, and apply it
+    nightColoringMode = false;
+    switchColoringMode(); //switch to night coloring mode, and apply it
 
     QStatusBar *sb = this->statusBar();
     chatModeLabel = new QLabel(this);
@@ -321,7 +321,7 @@ void MainWindow::escapePressed() {
         }
 
         if(langSelector!="en" || interestsString.length()>0) {
-            chatModeLabel->setText("Regular [*]");
+            chatModeLabel->setText("Regular*");
         } else {
             chatModeLabel->setText("Regular");
         }
@@ -405,10 +405,24 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
 {
     QWidget *focusedWidget = QApplication::focusWidget();
     //let's not redirect Control/Alt modified key presses to the typing box (Ctrl+C for ex)
-    if(focusedWidget != ui->typingBox && ((event->key()==Qt::Key_Period &&Qt::ControlModifier) || (!(event->modifiers() & (Qt::ControlModifier | Qt::AltModifier | Qt::MetaModifier))))) {
-        ui->typingBox->setFocus();
-        QKeyEvent *eventDuplicate = new QKeyEvent(event->type(), event->key(), event->modifiers(), event->text(), false, event->count());
-        QCoreApplication::postEvent(ui->typingBox, eventDuplicate);
+    //if(focusedWidget != ui->typingBox && ((event->key()==Qt::Key_Period && Qt::ControlModifier) || (!(event->modifiers() & (Qt::ControlModifier | Qt::AltModifier | Qt::MetaModifier))))) {
+
+    //qDebug() << event->nativeScanCode() << " and " << event->nativeVirtualKey();
+
+    //66 and 65032 are capslock on my linux machine - i do not pass it to typing because its a language changing key in my system
+    if(focusedWidget != ui->typingBox && event->nativeScanCode()!=66 && event->nativeVirtualKey()!=65032) {
+        if((
+                    (event->key()==Qt::Key_Period && (event->modifiers()&Qt::ControlModifier))
+                  ||
+                    (event->key()==Qt::Key_V && (event->modifiers()&Qt::ControlModifier))
+
+                  ||(!(event->modifiers() & (Qt::ControlModifier | Qt::AltModifier | Qt::MetaModifier)))
+          )) {
+
+                ui->typingBox->setFocus();
+                QKeyEvent *eventDuplicate = new QKeyEvent(event->type(), event->key(), event->modifiers(), event->text(), false, event->count());
+                QCoreApplication::postEvent(ui->typingBox, eventDuplicate);
+             }
     }
     //event->key();
     //qDebug() << "Inside MyWindow keypress";
