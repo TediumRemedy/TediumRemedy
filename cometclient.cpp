@@ -12,6 +12,10 @@ QString CometClient::decodeUnicode(const QString &unicodeCypher) {
     return str;
 }
 
+QString CometClient::requestIdentifierToString(int requestType) {
+    return QString("requestTypeToString should be overriden");
+}
+
 CometClient::CometClient(QObject *parent) :
     QObject(parent) {
 
@@ -52,7 +56,7 @@ void CometClient::postSynchronously(const QString &requestUrlString, const QStri
     QObject::connect(reply, SIGNAL(readyRead()), &loop, SLOT(quit()));
     QObject::connect(&timer, SIGNAL(timeout()), &loop, SLOT(quit()));
     timer.start(timeoutMilliseconds);
-    loop.exec();
+    loop.exec(QEventLoop::ExcludeUserInputEvents);
     if(timer.isActive()) {
         timer.stop();
     } else {
@@ -74,7 +78,7 @@ void CometClient::get(const QString &requestUrlString, int requestIdentifier) {
 
 void CometClient::cancelAllRequests() {
     foreach(QNetworkReply *reply, requestsMade) {
-        qDebug("Aborting %d", reply->request().attribute(QNetworkRequest::User).toInt());
+        qDebug("Aborting %s", requestIdentifierToString(reply->request().attribute(QNetworkRequest::User).toInt()).toLocal8Bit().data());
         reply->abort();
     }
 }
@@ -89,7 +93,7 @@ void CometClient::urlRequestFinished(QNetworkReply *reply) {
     requestsMade.remove(reply);
 
     if(reply->error()) {
-        qDebug("Error (Class: %s, requestIdentifier: %d): %s, errcode: %d", metaObject()->className(), requestIdentifier, reply->errorString().toStdString().c_str(), reply->error());
+        qDebug("(%s, requestIdentifier: %s (%d)). Error %d: %s", metaObject()->className(), requestIdentifierToString(requestIdentifier).toLocal8Bit().data(), requestIdentifier, reply->error(), reply->errorString().toStdString().c_str());
         reply->deleteLater();
         requestFailed(requestIdentifier, reply->error());
     } else { //no errors

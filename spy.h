@@ -21,6 +21,7 @@ signals:
     void StrangerStartsTyping(const QString &strangerID);
     void StrangerStopsTyping(const QString &strangerID);
     void StrangerDisconnected(const QString &strangerID);
+    void WaitingForStranger();
 
 public slots:
     void StartConversation(QString questionToDiscuss);
@@ -36,6 +37,8 @@ private:
 
     virtual void requestFinished(int requestIdentifier, const QString &responseString);
 
+    virtual QString requestIdentifierToString(int requestType);
+    virtual void requestFailed(int requestIdentifier, QNetworkReply::NetworkError errorCode);
 };
 
 #endif // SPY_H

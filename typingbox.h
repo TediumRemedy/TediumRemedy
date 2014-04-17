@@ -19,6 +19,10 @@ signals:
     void escapePressed();
     void switchMode();
 
+    void switchColoringMode();
+
+    void showPreferences();
+
     void typingStarted();
     void typingStopped();
 public slots:

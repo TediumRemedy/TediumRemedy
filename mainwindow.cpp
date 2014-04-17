@@ -9,8 +9,11 @@
 #include <QMediaPlayer>
 #include <QLayout>
 #include <QComboBox>
-
+#include <QDockWidget>
+#include <QPushButton>
 #include "russtranger.h"
+
+#include "strangerprefswindow.h"
 
 #include "cometclient.h"
 
@@ -25,14 +28,23 @@ const char YouColor[] = "#8888ff";
 #include <QAudioDeviceInfo>
 #include <QAudio>
 
+//For Linux Pulseaudio to play the wav files, they should be in Audio-CD format: 44.1 kHz, 16-bit, stereo
+//for conversion use ffmpeg -i filename.wav -vn -acodec pcm_s16le -ar 44100 -f wav filename_cd.wav
+
 void PlaySound() {
-    QSound::play("/home/mike/TediumRemedy/connected.wav");
-return;
+    /*QSound::play(":resources/connected.wav");
+    return;
+*/
+    QList<QAudioDeviceInfo> l = QAudioDeviceInfo::availableDevices(QAudio::AudioOutput);
+    foreach(QAudioDeviceInfo i, l) {
+        qDebug() << i.supportedCodecs();
+    }
+
 
     Phonon::MediaObject mo;
     Phonon::AudioOutput ao;
     createPath(&mo,&ao);
-    mo.setCurrentSource(Phonon::MediaSource("/home/mike/TediumRemedy/connected1.wav")); // insert your multimedia file here
+    mo.setCurrentSource(Phonon::MediaSource(":/resources/connected.wav")); // insert your multimedia file here
     mo.play();
     //return;
 
@@ -43,10 +55,11 @@ return;
        out << outputInfo.deviceName() << endl;
     }
     out << "END-OUTPUT" << endl;
+    return;
 
-    QMediaPlayer *p = new QMediaPlayer(0);
-    p->setMedia(QMediaContent(QUrl::fromLocalFile("/home/mike/TediumRemedy/connected.wav")));
-    p->play();
+    /*QMediaPlayer *p = new QMediaPlayer(0);
+    p->setMedia(QMediaContent(QUrl::fromLocalFile(":/resources/connected.wav")));
+    p->play();*/
 }
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -54,10 +67,23 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
 
+    //    "([^"]+)"|(\S+)
+
+    //    ""([^""]+)""|(\\S+)
+
+    //qDebug() << s.split(QRegExp("""([^""]+)""|(\\S+)"));
+
+
+    //return;
+
     //PlaySound();
     //return;
     ui->setupUi(this);
 
+    strangerPrefsWindow = new StrangerPrefsWindow(this);
+
+    //QDockWidget *drawdock = new QDockWidget(this,Qt::Dialog);
+    //this->addDockWidget(Qt::RightDockWidgetArea,drawdock);
 
     /*CometClient *c = new CometClient(this);
 
@@ -81,16 +107,28 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->dockWidgetContents_2->setLayout(dockLayout);
     */
 
+    QWidget::setTabOrder(ui->typingBox, ui->chatlogBox);
 
-    QFile stylesheetFile(":/resources/stylesheet.qss");
+    //do not allow Qt framework to intercept Tab keypress (we use it for switching modes)
+    //ui->chatlogBox->setFocusPolicy(Qt::NoFocus);
+
+
+    /*QFile stylesheetFile(":/resources/stylesheet.qss");
     if(!stylesheetFile.open(QFile::ReadOnly)) {
         qDebug() << "Error opening file " << stylesheetFile.error();
     }
     QString stylesheetString = QLatin1String(stylesheetFile.readAll());
     setStyleSheet(stylesheetString);
+*/
+
+    nightColoringMode = true;
+    switchColoringMode(); //switch to day coloring mode, and apply it
 
     QStatusBar *sb = this->statusBar();
     chatModeLabel = new QLabel(this);
+    //chatModeLabel = new QPushButton(this);
+    //chatModeLabel->setFlat(true);
+
     sb->addPermanentWidget(chatModeLabel);
     typingLabel = new QLabel(this);
     sb->addPermanentWidget(typingLabel);
@@ -99,12 +137,24 @@ MainWindow::MainWindow(QWidget *parent) :
     setGeometry(QStyle::alignedRect(Qt::LeftToRight, Qt::AlignCenter, size(), qApp->desktop()->availableGeometry()));
 
 
+    receivedMessageSound = NULL;
+    sentMessageSound = NULL;
+    connectedSound = NULL;
+    disconnectedSound = NULL;
+    //receivedMessageSound = new QSound(":/resources/shuffle.wav", this);
+    //sentMessageSound = new QSound(":/resources/test.wav", this);
+    //connectedSound = new QSound(":/resources/phone_pickup.wav", this);
+    //disconnectedSound = new QSound(":/resources/phone_disc.wav", this);
+    //return;
+
 
     QObject::connect(ui->typingBox, SIGNAL(enterPressed()), this, SLOT(enterPressed()));
     QObject::connect(ui->typingBox, SIGNAL(escapePressed()), this, SLOT(escapePressed()));    
     QObject::connect(ui->typingBox, SIGNAL(switchMode()), this, SLOT(SwitchMode()));
     QObject::connect(ui->typingBox, SIGNAL(typingStarted()), this, SLOT(TypingStarted()));
     QObject::connect(ui->typingBox, SIGNAL(typingStopped()), this, SLOT(TypingStopped()));
+    QObject::connect(ui->typingBox, SIGNAL(showPreferences()), this, SLOT(displayStrangerPreferencesWindow()));
+    QObject::connect(ui->typingBox, SIGNAL(switchColoringMode()), this, SLOT(switchColoringMode()));
 
 
 
@@ -116,22 +166,20 @@ MainWindow::MainWindow(QWidget *parent) :
     //rusStranger->requestUid();
 
 
-    //receivedMessageSound = new QSound(":/resources/received_message.wav", this);
-    //sentMessageSound = new QSound(":/resources/sent_message.wav", this);
-    //connectedSound = new QSound(":/resources/connected.wav", this);
-    //disconnectedSound = new QSound(":/resources/disconnected.wav", this);
 
-    //QSound *testSound = new QSound("/usr/share/sounds/KDE_Logout_new.wav");
-    //testSound->play();
+
 
     QObject::connect(stranger, SIGNAL(ReceivedMessage(const QString &)), this, SLOT(ReceivedMessage(const QString &)));
     QObject::connect(stranger, SIGNAL(StrangerDisconnected()), this, SLOT(StrangerDisconnected()));
-    QObject::connect(stranger, SIGNAL(ConversationStarted()), this, SLOT(StrangerConnected()));
+    QObject::connect(stranger, SIGNAL(ConversationStarted(QStringList, bool)), this, SLOT(StrangerConnected(QStringList, bool)));
+    //QObject::connect(stranger, SIGNAL(ConversationStarted()), this, SLOT(StrangerConnected()));
+
+
     QObject::connect(stranger, SIGNAL(ConversationStartedWithQuestion(QString)), this, SLOT(StrangerConnectedWithQuestion(QString)));
     QObject::connect(stranger, SIGNAL(StrangerStartsTyping()), this, SLOT(StrangerStartsTyping()));
     QObject::connect(stranger, SIGNAL(StrangerStopsTyping()), this, SLOT(StrangerStopsTyping()));
     QObject::connect(stranger, SIGNAL(SystemMessage(const QString &)), this, SLOT(SystemMessage(const QString &)));
-
+    QObject::connect(stranger, SIGNAL(WaitingForStranger()), this, SLOT(WaitingForStranger()));
 
     QObject::connect(spy, SIGNAL(ReceivedMessage(const QString &,const QString &)), this, SLOT(SpymodeReceivedMessage(const QString &,const QString &)));
     QObject::connect(spy, SIGNAL(StrangerDisconnected(const QString &)), this, SLOT(SpymodeStrangerDisconnected(const QString &)));
@@ -140,12 +188,15 @@ MainWindow::MainWindow(QWidget *parent) :
     QObject::connect(spy, SIGNAL(StrangerStartsTyping(QString)), this, SLOT(SpymodeStrangerStartsTyping(const QString &)));
     QObject::connect(spy, SIGNAL(StrangerStopsTyping()), this, SLOT(SpymodeStrangerStopsTyping(const QString &)));
     QObject::connect(spy, SIGNAL(SystemMessage(const QString &)), this, SLOT(SystemMessage(const QString &)));
+    QObject::connect(spy, SIGNAL(WaitingForStranger()), this, SLOT(WaitingForStranger()));
+
 
     QObject::connect(rusStranger, SIGNAL(ReceivedMessage(const QString &)), this, SLOT(ReceivedMessage(const QString &)));
     QObject::connect(rusStranger, SIGNAL(StrangerDisconnected()), this, SLOT(StrangerDisconnected()));
     QObject::connect(rusStranger, SIGNAL(ConversationStarted()), this, SLOT(StrangerConnected()));
     QObject::connect(rusStranger, SIGNAL(StrangerStartsTyping()), this, SLOT(StrangerStartsTyping()));
     QObject::connect(rusStranger, SIGNAL(StrangerStopsTyping()), this, SLOT(StrangerStopsTyping()));
+    QObject::connect(rusStranger, SIGNAL(WaitingForStranger()), this, SLOT(WaitingForStranger()));
 
 
 
@@ -154,6 +205,10 @@ MainWindow::MainWindow(QWidget *parent) :
     SwitchMode(); //switch it to regular
 
     this->escapePressed();
+
+    //strangerPrefsWindow->setModal(true);
+    //strangerPrefsWindow->show();
+
 }
 
 void MainWindow::SystemMessage(const QString &message) {
@@ -182,6 +237,18 @@ void MainWindow::windowClosing() {
     qDebug() << "Closed";
 }
 
+void MainWindow::WaitingForStranger() {
+    ui->chatlogBox->append(QString("<font color='")+SysMsgColor+"'>Waiting for stranger...</font>");
+}
+
+void MainWindow::displayStrangerPreferencesWindow()
+{
+    if(chatMode == Regular) {
+        strangerPrefsWindow->setParentCenterCoordinates(geometry().center());
+        strangerPrefsWindow->show();
+    }
+}
+
 void MainWindow::SwitchMode() {
     if(chatMode==Regular) {
         chatMode = AnsweringQuestions;
@@ -198,6 +265,26 @@ void MainWindow::SwitchMode() {
     }
 }
 
+void MainWindow::switchColoringMode() {
+    nightColoringMode = !nightColoringMode;
+    QString stylesheetFilePath;
+
+    if(nightColoringMode) {
+        stylesheetFilePath = (":/resources/stylesheet.qss");
+    } else {
+        stylesheetFilePath = (":/resources/stylesheet_bright.qss");
+    }
+
+    QFile stylesheetFile(stylesheetFilePath);
+
+    if(!stylesheetFile.open(QFile::ReadOnly)) {
+        qDebug() << "Error opening file " << stylesheetFile.error();
+    }
+    QString stylesheetString = QLatin1String(stylesheetFile.readAll());
+    setStyleSheet(stylesheetString);
+    strangerPrefsWindow->setStyleSheet(stylesheetString);
+}
+
 void MainWindow::enterPressed() {
     QString messageText = ui->typingBox->toPlainText();
     ui->chatlogBox->append(QString("<font color='")+YouColor+"'><b>You: </b></font>"+messageText);
@@ -211,18 +298,36 @@ void MainWindow::enterPressed() {
 }
 
 void MainWindow::escapePressed() {
+    if(currentlyWorkingMode == Regular || currentlyWorkingMode==AnsweringQuestions)
+        stranger->EndConversation();
+    else if(currentlyWorkingMode == Spying)
+        spy->EndConversation();
+    else if(currentlyWorkingMode == Russian)
+        rusStranger->EndConversation();
+
     ui->chatlogBox->clear();
     typingLabel->setText("");
     strangerTypingMask = 0;
 
-    stranger->EndConversation();
-    spy->EndConversation();
-    rusStranger->EndConversation();
+
 
     //spy->StartConversation(ui->typingBox->toPlainText());
-    if(chatMode == Regular)
-        stranger->StartConversation("en", "", false);
-    else if(chatMode == Spying)
+    if(chatMode == Regular) {
+        QString langSelector = "en";
+        QString interestsString = strangerPrefsWindow->interestsString();
+
+        if(strangerPrefsWindow->languageSelector().length() > 0) {
+            langSelector = strangerPrefsWindow->languageSelector();
+        }
+
+        if(langSelector!="en" || interestsString.length()>0) {
+            chatModeLabel->setText("Regular [*]");
+        } else {
+            chatModeLabel->setText("Regular");
+        }
+
+        stranger->StartConversation(langSelector, interestsString, false);
+    } else if(chatMode == Spying)
         spy->StartConversation(ui->typingBox->toPlainText());
     else if(chatMode == AnsweringQuestions)
         stranger->StartConversation("en", "", true);
@@ -235,22 +340,50 @@ void MainWindow::escapePressed() {
 
 void MainWindow::ReceivedMessage(const QString &messageText) {
     ui->chatlogBox->append(QString("<font color='")+StrangerColor+"'><b>Stranger: </b></font>"+messageText);
-    //receivedMessageSound->play();
+    if(receivedMessageSound)
+        receivedMessageSound->play();
+
     typingLabel->setText("");
 }
 
 void MainWindow::StrangerDisconnected() {
+    if(disconnectedSound)
+        disconnectedSound->play();
     ui->chatlogBox->append(QString("<font color='")+SysMsgColor+"'>Stranger disconnected</font>");
-    //disconnectedSound->play();
 }
 
 void MainWindow::StrangerConnected() {
+    ui->chatlogBox->clear();
+
+    if(connectedSound)
+        connectedSound->play();
 
     ui->chatlogBox->append(QString("<font color='")+SysMsgColor+"'>Stranger connected</font>");
     //connectedSound->play();
 }
 
+void MainWindow::StrangerConnected(QStringList interests, bool languageMatch) {
+    ui->chatlogBox->clear();
+
+    if(connectedSound)
+        connectedSound->play();
+
+    if(languageMatch) {
+        ui->chatlogBox->append(QString("<font color='")+SysMsgColor+"'>Stranger connected</font>"+
+                           "<font color='"+SysMsgColor+"'> ("+ strangerPrefsWindow->languageNameForSelector(strangerPrefsWindow->languageSelector()) +")</font>");
+    } else if(interests.count() > 0) {
+        ui->chatlogBox->append(QString("<font color='")+SysMsgColor+"'>Stranger connected</font>"+
+                           "<font color='"+SysMsgColor+"'> ("+ interests.join(", ") +")</font>");
+
+    } else {
+        ui->chatlogBox->append(QString("<font color='")+SysMsgColor+"'>Stranger connected</font>");
+
+    }
+}
+
 void MainWindow::StrangerConnectedWithQuestion(QString questionText) {
+    ui->chatlogBox->clear();
+
     ui->chatlogBox->append(QString("<font color='")+SysMsgColor+"'>"+questionText+"</font>");
 }
 
@@ -272,7 +405,7 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
 {
     QWidget *focusedWidget = QApplication::focusWidget();
     //let's not redirect Control/Alt modified key presses to the typing box (Ctrl+C for ex)
-    if(focusedWidget != ui->typingBox && !(event->modifiers() & (Qt::ControlModifier | Qt::AltModifier | Qt::MetaModifier))) {
+    if(focusedWidget != ui->typingBox && ((event->key()==Qt::Key_Period &&Qt::ControlModifier) || (!(event->modifiers() & (Qt::ControlModifier | Qt::AltModifier | Qt::MetaModifier))))) {
         ui->typingBox->setFocus();
         QKeyEvent *eventDuplicate = new QKeyEvent(event->type(), event->key(), event->modifiers(), event->text(), false, event->count());
         QCoreApplication::postEvent(ui->typingBox, eventDuplicate);
@@ -297,6 +430,8 @@ void MainWindow::SpymodeStrangerDisconnected(const QString &strangerID) {
 }
 
 void MainWindow::SpymodeStrangersConnected() {
+    ui->chatlogBox->clear();
+
     ui->chatlogBox->append(QString("<font color='")+SysMsgColor+"'>Conversation started</font>");
 }
 

@@ -17,12 +17,14 @@ public:
 
 signals:
     void ConversationStarted();
+    void ConversationStarted(QStringList matchingInterests, bool foundLanguageMatch);
     void ConversationStartedWithQuestion(QString questionText);
     void ReceivedMessage(const QString &messageText);
     void StrangerStartsTyping();
     void StrangerStopsTyping();
     void StrangerDisconnected();
     void SystemMessage(const QString &message);
+    void WaitingForStranger();
 
 public slots:
     void StartConversation(const QString language, const QString topics, const bool wantSpy = false, const bool unmonitored = false);
@@ -34,6 +36,10 @@ public slots:
 private:
     enum RequestType {UnknownRequest, StartRequest, DisconnectRequest, SendMessageRequest,
                       StartTypingRequest, StopTypingRequest, RequestPollEvents};
+
+    QString requestIdentifierToString(int requestType);
+    virtual void requestFailed(int requestIdentifier, QNetworkReply::NetworkError errorCode);
+
 
     void pollNewEvents();
     bool processEvent(QJsonArray eventArray); //returns false if the conversation has ended

@@ -39,6 +39,10 @@ void TypingBox::keyPressEvent(QKeyEvent *event) {
         emit escapePressed();
     } else if(event->key()==Qt::Key_Tab) {
         emit switchMode();
+    } else if(event->key()==Qt::Key_Period && (event->modifiers() & Qt::ControlModifier)) {
+        emit showPreferences();
+    } else if(event->key()==Qt::Key_Z && (event->modifiers() & Qt::ControlModifier)) {
+        emit switchColoringMode();
     } else {
         QTextBrowser::keyPressEvent(event);
     }

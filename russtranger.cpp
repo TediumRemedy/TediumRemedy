@@ -124,6 +124,15 @@ wait_new_opponent
 
 */
 
+QString RusStranger::requestIdentifierToString(int requestType) {
+    //enum RequestType {ErroneousType, RequestChatKey, RequestUid, RequestWaitOpponent, RequestSetReady, RequestGetIdentifier, RequestSendAction};
+    char *requestTypeString[] = {"ErroneousType", "RequestChatKey", "RequestUid", "RequestWaitOpponent", "RequestSetReady", "RequestGetIdentifier", "RequestSendAction"};
+    int stringsCount = sizeof(requestTypeString)/sizeof(char*);
+    if(requestType < stringsCount)
+        return QString(requestTypeString[requestType]);
+    else
+        return QString("requestTypeToString() error: int requestType exceeds size of requestTypeString array");
+}
 
 void RusStranger::StartConversation() {
     EndConversation();
@@ -255,10 +264,13 @@ void RusStranger::requestFinished(int requestIdentifier, const QString &response
             uid = document.object()["uid"].toString();
             qDebug() << "Got uid: " << uid;
             getIdentifier();
+
+            emit WaitingForStranger();
             waitOpponentPoll();
         }
     } else if(requestType == RusStranger::RequestWaitOpponent) {
         qDebug() << "Got wait opponent response: " << replyText;
+
         if(cid.isEmpty()) {
             QTimer::singleShot(1000, this, SLOT(waitOpponentTimerHandler()));
         } else { //got cid, stop "waiting opponent", time to /send and /ping
@@ -337,4 +349,8 @@ void RusStranger::requestFinished(int requestIdentifier, const QString &response
     } else {
         qDebug() << "Unknown request type. Text: " << replyText;
     }
+}
+
+void RusStranger::requestFailed(int requestIdentifier, QNetworkReply::NetworkError errorCode) {
+    //do nothing
 }

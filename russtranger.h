@@ -27,16 +27,14 @@ public:
 private:
     enum RequestType {ErroneousType, RequestChatKey, RequestUid, RequestWaitOpponent, RequestSetReady, RequestGetIdentifier, RequestSendAction};
 
-    //QNetworkAccessManager *nam;
-    //QSet<QNetworkReply*> *requestsMade;
-
     QString chatKey;
     QString uid;
     QString cid;
     QString rpId;
 
     virtual void requestFinished(int requestIdentifier, const QString &responseString);
-
+    virtual void requestFailed(int requestIdentifier, QNetworkReply::NetworkError errorCode);
+    virtual QString requestIdentifierToString(int requestType);
 private slots:
     //void urlRequestFinished(QNetworkReply *reply);
     void waitOpponentTimerHandler();
@@ -47,6 +45,7 @@ signals:
     void StrangerStartsTyping();
     void StrangerStopsTyping();
     void StrangerDisconnected();
+    void WaitingForStranger();
 
 public slots:
     void StartConversation();

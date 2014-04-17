@@ -19,7 +19,8 @@ SOURCES += main.cpp\
     spy.cpp \
     russtranger.cpp \
     chinastranger.cpp \
-    cometclient.cpp
+    cometclient.cpp \
+    strangerprefswindow.cpp
 
 HEADERS  += mainwindow.h \
     typingbox.h \
@@ -27,9 +28,11 @@ HEADERS  += mainwindow.h \
     spy.h \
     russtranger.h \
     chinastranger.h \
-    cometclient.h
+    cometclient.h \
+    strangerprefswindow.h
 
-FORMS    += mainwindow.ui
+FORMS    += mainwindow.ui \
+    strangerprefswindow.ui
 
 OTHER_FILES += \
     stylesheet.qss \

@@ -15,6 +15,9 @@ private:
     QNetworkAccessManager *nam;
     QSet<QNetworkReply*> requestsMade;
 
+protected:
+    virtual QString requestIdentifierToString(int requestType);
+
 public:
     explicit CometClient(QObject *parent = 0);
     static QString decodeUnicode(const QString &unicodeCypher);

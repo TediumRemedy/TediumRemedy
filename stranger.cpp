@@ -19,8 +19,9 @@ void Stranger::StartConversation(const QString language, const QString topics, c
     QString requestUrlString = "http://front2.omegle.com/start?rcs=1&firstevents=1&spid=&randid=MG6PZ6ZP&lang="+
             language;
     //QString topics="\"games\",\"music\"";
-    if(!topics.isEmpty())
+    if(!topics.isEmpty()) {
         requestUrlString+="&topics="+QUrl::toPercentEncoding("["+topics+"]");
+    }
 
     if(wantSpy)
         requestUrlString+="&wantsspy=1";
@@ -49,6 +50,21 @@ void Stranger::StopTyping() {
     post("http://front2.omegle.com/stoppedtyping", "id="+QUrl::toPercentEncoding(clientID), StopTypingRequest);
 }
 
+QString Stranger::requestIdentifierToString(int requestType) {
+    //enum RequestType {UnknownRequest, StartRequest, DisconnectRequest, SendMessageRequest, StartTypingRequest, StopTypingRequest, RequestPollEvents};
+    char *requestTypeString[] = {"UnknownRequest", "StartRequest", "DisconnectRequest", "SendMessageRequest", "StartTypingRequest", "StopTypingRequest", "RequestPollEvents"};
+    int stringsCount = sizeof(requestTypeString)/sizeof(char*);
+    if(requestType < stringsCount)
+        return QString(requestTypeString[requestType]);
+    else
+        return QString("requestTypeToString() error: int requestType exceeds size of requestTypeString array");
+}
+
+void Stranger::requestFailed(int requestIdentifier, QNetworkReply::NetworkError errorCode)
+{
+
+}
+
 void Stranger::requestFinished(int requestIdentifier, const QString &responseString) {
     QString replyText(responseString);
     //qDebug() << replyText;
@@ -64,7 +80,7 @@ void Stranger::requestFinished(int requestIdentifier, const QString &responseStr
         clientID = document.object()["clientID"].toString();
         qDebug() << "Got client id: " << clientID;
 
-        //process event - maybe its "connected"...
+        //process event - maybe its "connected" or "waiting"...
         if(document.object().find("events") != document.object().end()) {
             QJsonArray events = document.object()["events"].toArray();
             //qDebug() << "AAAA: " << events[1].toArray()[0].toString();
@@ -108,15 +124,50 @@ bool Stranger::processEvent(QJsonArray eventArray) {
         this->StartConversation("en", "", false, true);
     } else {
         //search for "connected" event
-        for(int i=0; i<eventArray.count(); i++) {
-            //qDebug() << "Looking for cnt: " << eventArray[0].toArray()[i].toString();
-            if(eventArray[i].toArray()[0].toString() == "connected") {
-                if(eventArray[i+1].isArray() && eventArray[i+1].toArray()[0].toString() == "question")
-                    emit ConversationStartedWithQuestion(eventArray[1].toArray()[1].toString());
-                else
-                    emit ConversationStarted();
+        bool isConnectedEvent = false;
+        bool isFoundLanguageMatch = false;
+        QStringList matchingInterests;
+        QString questionText;
+
+        foreach(QJsonValue item, eventArray) {
+            if(!item.isArray())
+                continue;
+
+
+            QJsonArray subArray = item.toArray(); //subarray is a small 1 or 2 element array, that contains things like ["connected"], ["serverMessage", "msg"]
+
+            if(subArray.count() == 1 && subArray[0].isString()) {
+                if(subArray[0].toString()=="connected") {
+                    isConnectedEvent = true;
+                } else if(subArray[0].toString() == "waiting") {
+                    emit WaitingForStranger();
+                }
+            } else if(subArray.count() == 2 && subArray[0].isString()) {
+                QString firstPart = subArray[0].toString();
+                QJsonValue secondPart = subArray[1];
+
+                if(firstPart == "serverMessage") {
+                    if(secondPart.isString() && secondPart.toString()=="You both speak the same language.") {
+                        isFoundLanguageMatch = true;
+                    }
+                } else if(firstPart == "question") {
+                    questionText = secondPart.toString();
+                } else if(firstPart == "commonLikes") {
+                    if(secondPart.isArray()) {
+                        foreach(QJsonValue like, secondPart.toArray()) {
+                            matchingInterests.append(like.toString());
+                        }
+                    }
+                }
             }
         }
+
+        if(isConnectedEvent && questionText.isEmpty()) {
+            emit ConversationStarted(matchingInterests, isFoundLanguageMatch);
+        } else if(isConnectedEvent) {
+            emit ConversationStartedWithQuestion(questionText);
+        }
+
     }
     return true;
 }

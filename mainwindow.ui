@@ -55,7 +55,7 @@
      <x>0</x>
      <y>0</y>
      <width>440</width>
-     <height>25</height>
+     <height>19</height>
     </rect>
    </property>
   </widget>
@@ -69,6 +69,9 @@
    <header>typingbox.h</header>
   </customwidget>
  </customwidgets>
+ <tabstops>
+  <tabstop>chatlogBox</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

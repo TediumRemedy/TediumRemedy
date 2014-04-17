@@ -9,6 +9,17 @@ QMainWindow {
     /*border:0px;*/
 }
 
+QDialog {
+    color: #EAEAEA;
+    /*background: qlineargradient(x1: 0, y1: 1, x2: 0, y2: 0,
+                        stop: 0 #77c3e5, stop: 1 #5ea9cc);*/
+    background: qlineargradient(x1: 0, y1: 1, x2: 0, y2: 0,
+                                            /*stop: 0 #555555, stop: 1 #aaaaaa*/
+                                stop: 0 #111111, stop: 1 #444444
+                                );
+    /*border:0px;*/
+}
+
 QTextBrowser {
     background-color: rgba(0, 0, 0, 0);
     border: 1px solid #555555;
@@ -16,6 +27,10 @@ QTextBrowser {
 }
 
 QLabel {
+       color: #777777;
+}
+
+QPushButton {
        color: #777777;
 }
 

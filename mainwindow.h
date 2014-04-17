@@ -12,6 +12,8 @@
 
 */
 
+#include "strangerprefswindow.h"
+
 #include <QMainWindow>
 #include "stranger.h"
 #include "spy.h"
@@ -35,23 +37,31 @@ public:
 private:
     Ui::MainWindow *ui;
 
+    StrangerPrefsWindow *strangerPrefsWindow;
+
     enum ChatMode {Regular, Spying, AnsweringQuestions, Russian};
     ChatMode chatMode;
     ChatMode currentlyWorkingMode;
 
     QLabel *typingImage;
     QLabel *typingLabel;
+    //QPushButton *chatModeLabel;
     QLabel *chatModeLabel;
+
+    bool nightColoringMode;
 
 public slots:
     void enterPressed();
     void escapePressed();
     void SwitchMode();
+    void switchColoringMode();
     void TypingStarted();
     void TypingStopped();
 
     void windowClosing();
+    void displayStrangerPreferencesWindow();
 
+    void WaitingForStranger();
 private:
     void updateTypingLabelForSpymode();
 
@@ -74,6 +84,7 @@ private slots:
     void ReceivedMessage(const QString &messageText);
     void StrangerDisconnected();
     void StrangerConnected();
+    void StrangerConnected(QStringList interests, bool languageMatch);
     void StrangerConnectedWithQuestion(QString questionText);
     void StrangerStartsTyping();
     void StrangerStopsTyping();

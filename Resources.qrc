@@ -6,5 +6,8 @@
         <file>received_message.wav</file>
         <file>sent_message.wav</file>
         <file>stylesheet_bright.qss</file>
+        <file>shuffle.wav</file>
+        <file>phone_disc.wav</file>
+        <file>phone_pickup.wav</file>
     </qresource>
 </RCC>
