@@ -13,9 +13,11 @@ Currently app only supports Omegle.com (multilingual) and Chatvdvoem.ru (russian
 
 Controls:
 * Tab - to switch modes (Regular chat, Russian chat, Answering questions, Asking questions)
-* Control+"." - show preferences (you can enter your "likes" or select a language that your chat partners prefer to speak). This works only in "Regular" chat mode. The likes string should be in a format:
- `"first like", "second like", "another"`
-Each word or combination of words should always be quoted, each like is separated by commas. If you enter likes, the chat will try to match you with strangers, that have also some of these words-likes in their lists of likes. Otherwise, the chat will try to match you with strangers that prefer to speak selected language.
+* Control+"." - show preferences (you can enter your "likes" or select a language that your chat partners prefer to speak). 
+This works only in "Regular" chat mode. The likes string should be in a format:
+ `"first like" "second like" another`
+If the interest contains of more than 1 word, it should be quouted with double quotation marks. Interests can be separated by spaces or commas. 
+If you enter likes, the chat will try to match you with the strangers, that have also some of these phrases-likes in their lists of likes. Otherwise, the chat will try to match you with strangers that prefer to speak selected language (which is English by default, but can be changed).
 * Control+"z" - switch between night (dark) and day (bright) interface coloring
 * Esc - find a new stranger and start a new chat (in "Question" mode you need to enter a question in typing box prior to pressing escape)
 
