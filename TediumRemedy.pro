@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui network multimedia script phonon4qt5
+QT       += core gui network multimedia script
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 

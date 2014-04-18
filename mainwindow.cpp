@@ -21,10 +21,6 @@
 
 #include "cometclient.h"
 
-#include <phonon4qt5/phonon/AudioOutput>
-#include <phonon4qt5/phonon/MediaObject>
-#include <phonon4qt5/phonon/MediaSource>
-
 const char SysMsgColor[] = "#888888";
 const char StrangerColor[] = "#ff8888";
 const char YouColor[] = "#8888ff";
@@ -74,12 +70,6 @@ void MainWindow::PlaySound() {
     }
 
 
-    Phonon::MediaObject mo;
-    Phonon::AudioOutput ao;
-    createPath(&mo,&ao);
-    mo.setCurrentSource(Phonon::MediaSource(":/resources/connected.wav")); // insert your multimedia file here
-    mo.play();
-    //return;
 
     QTextStream out(stdout);
     out << "START-OUTPUT" << endl;
