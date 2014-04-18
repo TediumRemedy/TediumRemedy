@@ -11,6 +11,10 @@
 #include <QComboBox>
 #include <QDockWidget>
 #include <QPushButton>
+#include <QAudioOutput>
+#include <QRegExp>
+
+#include "wavfile.h"
 #include "russtranger.h"
 
 #include "strangerprefswindow.h"
@@ -31,7 +35,36 @@ const char YouColor[] = "#8888ff";
 //For Linux Pulseaudio to play the wav files, they should be in Audio-CD format: 44.1 kHz, 16-bit, stereo
 //for conversion use ffmpeg -i filename.wav -vn -acodec pcm_s16le -ar 44100 -f wav filename_cd.wav
 
-void PlaySound() {
+void MainWindow::PlaySound() {
+
+
+    //QSound *sound = new QSound("/home/mike/TediumRemedy/sample.wav", this);
+    //sound->play();
+    //return;
+
+    sourceFile.setFileName("/home/mike/TediumRemedy/sample.wav");
+    sourceFile.open(QIODevice::ReadOnly);
+
+    QAudioFormat format;
+    // Set up the format, eg.
+    format.setSampleRate(44100);
+    format.setChannelCount(2);
+    format.setSampleSize(16);
+    format.setCodec("audio/pcm");
+    format.setByteOrder(QAudioFormat::LittleEndian);
+    format.setSampleType(QAudioFormat::SignedInt);
+
+    QAudioDeviceInfo info(QAudioDeviceInfo::defaultOutputDevice());
+    if (!info.isFormatSupported(format)) {
+        qWarning() << "Raw audio format not supported by backend, cannot play audio.";
+        return;
+    }
+
+
+
+    return;
+
+
     /*QSound::play(":resources/connected.wav");
     return;
 */
@@ -62,6 +95,8 @@ void PlaySound() {
     p->play();*/
 }
 
+
+
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
@@ -71,10 +106,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     //    ""([^""]+)""|(\\S+)
 
-    //qDebug() << s.split(QRegExp("""([^""]+)""|(\\S+)"));
 
-
-    //return;
 
     //PlaySound();
     //return;
@@ -141,11 +173,14 @@ MainWindow::MainWindow(QWidget *parent) :
     sentMessageSound = NULL;
     connectedSound = NULL;
     disconnectedSound = NULL;
-    //receivedMessageSound = new QSound(":/resources/shuffle.wav", this);
-    //sentMessageSound = new QSound(":/resources/test.wav", this);
-    //connectedSound = new QSound(":/resources/phone_pickup.wav", this);
-    //disconnectedSound = new QSound(":/resources/phone_disc.wav", this);
-    //return;
+    //receivedMessageSound = new WavFile(":/resources/shuffle.wav", this);
+    //sentMessageSound = new WavFile(":/resources/test.wav", this);
+    //connectedSound = new WavFile(":/resources/phone_pickup.wav", this);
+    //disconnectedSound = new WavFile(":/resources/phone_disc.wav", this);
+
+    //receivedMessageSound->setObjectName();
+
+//return;
 
 
     QObject::connect(ui->typingBox, SIGNAL(enterPressed()), this, SLOT(enterPressed()));
@@ -286,6 +321,7 @@ void MainWindow::switchColoringMode() {
 }
 
 void MainWindow::enterPressed() {
+    //receivedMessageSound->play();
     QString messageText = ui->typingBox->toPlainText();
     ui->chatlogBox->append(QString("<font color='")+YouColor+"'><b>You: </b></font>"+messageText);
     ui->typingBox->clear();
@@ -315,6 +351,7 @@ void MainWindow::escapePressed() {
     if(chatMode == Regular) {
         QString langSelector = "en";
         QString interestsString = strangerPrefsWindow->interestsString();
+        qDebug() << interestsString;
 
         if(strangerPrefsWindow->languageSelector().length() > 0) {
             langSelector = strangerPrefsWindow->languageSelector();

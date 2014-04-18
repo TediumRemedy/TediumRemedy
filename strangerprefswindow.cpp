@@ -10,7 +10,6 @@ StrangerPrefsWindow::StrangerPrefsWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
-
     //languages.push_back(QPair<QString, QString>("1", "2"));
     languages.push_back(QPair<QString, QString>("Afrikaans", "af"));
     languages.push_back(QPair<QString, QString>("Albanian", "sq"));
@@ -97,17 +96,28 @@ StrangerPrefsWindow::StrangerPrefsWindow(QWidget *parent) :
 
 QString StrangerPrefsWindow::interestsString()
 {
-    QString s = ui->interestsTextbox->toPlainText();
+    QString interestsString = ui->interestsTextbox->toPlainText();
 
-    //    "([^"]+)"|(\S+)
+    //the following regexp is used to turn a string of interests into a list of interests-tokens
+    // "[^"]*"|[^\s,"]+
 
-    //    ""([^""]+)""|(\\S+)
+    //QString testString = " , \"one"    \"two\",   \" three and more \" ,four,   \"five\" ,, six  seven ";
+    //qDebug() << interestsString;
 
-    //qDebug() << s.split(QRegExp("""([^""]+)""|(\\S+)"));
+    QStringList interestsList;
+    QRegExp rx = QRegExp("\"[^\"]*\"|[^\\s,\"]+");
+    //qDebug() << rx;
+    int pos = 0;
+    while((pos = rx.indexIn(interestsString, pos)) !=-1) {
+        QStringList tokens = rx.capturedTexts();
+        foreach(QString t, tokens) {
+            QString trimmedToken = t.remove(QRegExp("^\"")).remove(QRegExp("\"$")); //trim quotation marks
+            interestsList.append("\""+trimmedToken+"\"");
+        }
+        pos+=rx.matchedLength();
+    }
 
-
-    return s;
-
+    return interestsList.join(", ");
 }
 
 QString StrangerPrefsWindow::languageSelector()
@@ -134,12 +144,16 @@ StrangerPrefsWindow::~StrangerPrefsWindow()
 void StrangerPrefsWindow::interestsTyped()
 {
     //qDebug("interstsTyped");
-    ui->languagePicker->setCurrentIndex(ui->languagePicker->findData("en"));
+    if(!ui->interestsTextbox->toPlainText().isEmpty()) {
+        ui->languagePicker->setCurrentIndex(ui->languagePicker->findData("en"));
+    }
 }
 
 void StrangerPrefsWindow::languageChanged(QString newLanguage)
 {
-    //qDebug("languageChanged");
+    if(ui->languagePicker->currentData().toString() != "en") {
+        ui->interestsTextbox->setPlainText("");
+    }
 }
 
 void StrangerPrefsWindow::showEvent(QShowEvent *event) {

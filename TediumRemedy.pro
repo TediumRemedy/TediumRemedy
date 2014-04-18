@@ -20,7 +20,10 @@ SOURCES += main.cpp\
     russtranger.cpp \
     chinastranger.cpp \
     cometclient.cpp \
-    strangerprefswindow.cpp
+    strangerprefswindow.cpp \
+    wavfile.cpp \
+    wavinstance.cpp \
+    intereststextedit.cpp
 
 HEADERS  += mainwindow.h \
     typingbox.h \
@@ -29,7 +32,10 @@ HEADERS  += mainwindow.h \
     russtranger.h \
     chinastranger.h \
     cometclient.h \
-    strangerprefswindow.h
+    strangerprefswindow.h \
+    wavfile.h \
+    wavinstance.h \
+    intereststextedit.h
 
 FORMS    += mainwindow.ui \
     strangerprefswindow.ui

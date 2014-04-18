@@ -201,7 +201,7 @@ void RusStranger::requestUid() {
 
 void RusStranger::waitOpponentPoll() {
     if(!cid.isEmpty()) {
-        qDebug() << "waitOpponentPoll: cid is empty, can't poll!";
+        qDebug() << "waitOpponentPoll: cid is not empty, stop polling!";
         return;
     }
 
@@ -214,6 +214,7 @@ void RusStranger::waitOpponentTimerHandler() {
     if(waitOpponentPollCounter >= 5) {
         qDebug("waitOpponentPollCounter is 5, giving up polling. Restarting chat");
         StartConversation();
+
     } else {
         waitOpponentPoll();
     }

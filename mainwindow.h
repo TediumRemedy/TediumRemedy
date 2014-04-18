@@ -21,6 +21,11 @@
 #include <QtMultimedia/QSoundEffect>
 #include <QLabel>
 #include <QSound>
+#include <QAudio>
+#include <QFile>
+#include <QAudioOutput>
+
+#include "wavfile.h"
 
 namespace Ui {
 class MainWindow;
@@ -69,10 +74,10 @@ private:
     Spy *spy;
     RusStranger *rusStranger;
 
-    QSound *receivedMessageSound;
-    QSound *sentMessageSound;
-    QSound *disconnectedSound;
-    QSound *connectedSound;
+    WavFile *receivedMessageSound;
+    WavFile *sentMessageSound;
+    WavFile *disconnectedSound;
+    WavFile *connectedSound;
 
 
     unsigned char strangerTypingMask; //00 - no one typing, f0 - first typing, 0f - second typing, ff - both typing
@@ -100,6 +105,9 @@ private slots:
 private:
     void PlaySoundFile(QString filename);
 
+    QFile sourceFile;   // class member.
+    QAudioOutput* audio; // class member.
+    void PlaySound();
 };
 
 #endif // MAINWINDOW_H
