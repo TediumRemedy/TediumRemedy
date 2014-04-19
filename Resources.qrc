@@ -9,5 +9,6 @@
         <file>shuffle.wav</file>
         <file>phone_disc.wav</file>
         <file>phone_pickup.wav</file>
+        <file>icon/RunningIcon.png</file>
     </qresource>
 </RCC>

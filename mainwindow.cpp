@@ -102,6 +102,8 @@ MainWindow::MainWindow(QWidget *parent) :
     //return;
     ui->setupUi(this);
 
+    QApplication::setWindowIcon(QIcon(":/resources/Icon/RunningIcon.png"));
+
     strangerPrefsWindow = new StrangerPrefsWindow(this);
 
     //QDockWidget *drawdock = new QDockWidget(this,Qt::Dialog);

@@ -11,6 +11,8 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = TediumRemedy
 TEMPLATE = app
 
+RC_ICONS = icon/TediumRemedy.ico
+#ICON = icon/TediumRemedy.icns
 
 SOURCES += main.cpp\
         mainwindow.cpp \
@@ -47,3 +49,5 @@ OTHER_FILES += \
 
 RESOURCES += \
     Resources.qrc
+
+
