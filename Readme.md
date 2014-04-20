@@ -22,5 +22,4 @@ If you enter likes, the chat will try to match you with strangers that have also
 * Esc - find a new stranger and start a new chat (in "Question" mode you need to enter a question in typing box prior to pressing escape)
 
 ![Alt text](https://raw.github.com/TediumRemedy/TediumRemedy/master/screenshots/MainWindow.png)
-
 ![Alt text](https://raw.github.com/TediumRemedy/TediumRemedy/master/screenshots/Preferences.png)
