@@ -23,9 +23,8 @@ SOURCES += main.cpp\
     chinastranger.cpp \
     cometclient.cpp \
     strangerprefswindow.cpp \
-    wavfile.cpp \
-    wavinstance.cpp \
-    intereststextedit.cpp
+    intereststextedit.cpp \
+    wavsound.cpp
 
 HEADERS  += mainwindow.h \
     typingbox.h \
@@ -35,9 +34,8 @@ HEADERS  += mainwindow.h \
     chinastranger.h \
     cometclient.h \
     strangerprefswindow.h \
-    wavfile.h \
-    wavinstance.h \
-    intereststextedit.h
+    intereststextedit.h \
+    wavsound.h
 
 FORMS    += mainwindow.ui \
     strangerprefswindow.ui

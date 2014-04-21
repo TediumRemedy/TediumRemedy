@@ -6,11 +6,11 @@
 #include <QtCore/qendian.h>
 #include <QVector>
 #include <QDebug>
-//#include "utils.h"
-#include "wavfile.h"
-#include <QDebug>
+#include <QAudioFormat>
+#include <QAudioOutput>
+#include <QFile>
 
-class WavInstance: QObject {
+class WavSound: QObject {
     Q_OBJECT
 
     int m_headerLength;
@@ -25,7 +25,7 @@ class WavInstance: QObject {
 public:
     void play();
 
-    WavInstance(QString fileName, QObject *parent);
+    WavSound(QString fileName, QObject *parent);
 signals:
 
 public slots:

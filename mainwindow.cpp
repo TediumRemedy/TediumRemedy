@@ -14,7 +14,7 @@
 #include <QAudioOutput>
 #include <QRegExp>
 
-#include "wavfile.h"
+#include "wavsound.h"
 #include "russtranger.h"
 
 #include "strangerprefswindow.h"
@@ -80,7 +80,7 @@ void MainWindow::PlaySound() {
     out << "END-OUTPUT" << endl;
     return;
 
-    /*QMediaPlayer *p = new QMediaPlayer(0);
+    /*QMediaPlayer *p  = new QMediaPlayer(0);
     p->setMedia(QMediaContent(QUrl::fromLocalFile(":/resources/connected.wav")));
     p->play();*/
 }
@@ -97,6 +97,9 @@ MainWindow::MainWindow(QWidget *parent) :
     //    ""([^""]+)""|(\\S+)
 
 
+    //WavSound *w = new WavSound(":/resources/connected.wav", 0);
+    //w->play();
+    //return;
 
     //PlaySound();
     //return;

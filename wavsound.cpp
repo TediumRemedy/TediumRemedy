@@ -1,40 +1,4 @@
-#include "wavinstance.h"
-
-void WavInstance::play() {
-    QFile *file = new QFile(fileName);
-    file->open(QIODevice::ReadOnly);
-    QAudioFormat f;
-    readHeader(&f, file);
-
-
-
-    QAudioFormat format = f;
-
-    QAudioDeviceInfo info(QAudioDeviceInfo::defaultOutputDevice());
-    if (!info.isFormatSupported(format)) {
-        qWarning() << "Raw audio format not supported by backend, cannot play audio.";
-        return;
-    }
-
-    //seek(0x4e*4); //...avoiding clicks from the wav files
-
-    file->seek(0x4e);
-
-    QAudioOutput *audio = new QAudioOutput(format, NULL);
-    if(file->size()<30000)
-        audio->setBufferSize(10000);
-
-    audio->setVolume(0.5);
-    connect(audio, SIGNAL(stateChanged(QAudio::State)), this, SLOT(handleStateChanged(QAudio::State)));
-    //this->seek(1000);
-    audio->start(file);
-}
-
-WavInstance::WavInstance(QString fileName, QObject *parent):fileName(fileName), QObject(parent)
-{
-
-}
-
+#include "wavsound.h"
 
 //total 8 bytes
 struct chunk
@@ -72,7 +36,44 @@ struct CombinedHeader
     WAVEHeader  wave;
 };
 
-bool WavInstance::readHeader(QAudioFormat *theFormat, QFile *file)
+
+
+
+void WavSound::play() {
+    QFile *file = new QFile(fileName);
+    file->open(QIODevice::ReadOnly);
+    QAudioFormat f;
+    readHeader(&f, file);
+
+    QAudioFormat format = f;
+
+    QAudioDeviceInfo info(QAudioDeviceInfo::defaultOutputDevice());
+    if (!info.isFormatSupported(format)) {
+        qWarning() << "Raw audio format not supported by backend, cannot play audio.";
+        return;
+    }
+
+    //seek(0x4e*4); //...avoiding clicks from the wav files
+
+    file->seek(0x4e);
+
+    QAudioOutput *audio = new QAudioOutput(format, NULL);
+    if(file->size()<30000)
+        audio->setBufferSize(10000);
+
+    audio->setVolume(0.5);
+    connect(audio, SIGNAL(stateChanged(QAudio::State)), this, SLOT(handleStateChanged(QAudio::State)));
+    audio->start(file);
+}
+
+WavSound::WavSound(QString fileName, QObject *parent):fileName(fileName), QObject(parent)
+{
+
+}
+
+
+
+bool WavSound::readHeader(QAudioFormat *theFormat, QFile *file)
 {
     QAudioFormat m_fileFormat;
     CombinedHeader header;
@@ -125,13 +126,13 @@ bool WavInstance::readHeader(QAudioFormat *theFormat, QFile *file)
     return result;
 }
 
-void WavInstance::handleStateChanged(QAudio::State newState)
+void WavSound::handleStateChanged(QAudio::State newState)
 {
     qDebug() << "handleStateChanged: " << newState;
     switch (newState) {
         case QAudio::IdleState:
             // Finished playing (no more data)
-            //audio->stop();
+            audio->stop();
             //file->close();
             //delete audio;
             //delete file;

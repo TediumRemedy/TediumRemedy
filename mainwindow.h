@@ -25,7 +25,7 @@
 #include <QFile>
 #include <QAudioOutput>
 
-#include "wavfile.h"
+#include "wavsound.h"
 
 namespace Ui {
 class MainWindow;
@@ -74,10 +74,10 @@ private:
     Spy *spy;
     RusStranger *rusStranger;
 
-    WavFile *receivedMessageSound;
-    WavFile *sentMessageSound;
-    WavFile *disconnectedSound;
-    WavFile *connectedSound;
+    WavSound *receivedMessageSound;
+    WavSound *sentMessageSound;
+    WavSound *disconnectedSound;
+    WavSound *connectedSound;
 
 
     unsigned char strangerTypingMask; //00 - no one typing, f0 - first typing, 0f - second typing, ff - both typing
