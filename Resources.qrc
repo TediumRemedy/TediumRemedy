@@ -13,5 +13,6 @@
         <file>sounds/click8.wav</file>
         <file>sounds/shuffle.wav</file>
         <file>sounds/phone_disc.wav</file>
+        <file>sounds/phone_pickup.wav</file>
     </qresource>
 </RCC>
