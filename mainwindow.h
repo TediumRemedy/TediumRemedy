@@ -74,10 +74,14 @@ private:
     Spy *spy;
     RusStranger *rusStranger;
 
-    WavSound *receivedMessageSound;
-    WavSound *sentMessageSound;
-    WavSound *disconnectedSound;
-    WavSound *connectedSound;
+
+    //QSound has problem with pulseaudio
+    //PulseAudio should be in a "non flat-volumes" mode to work with normal volume (not setting system volume to 100% everytime)
+    //https://wiki.archlinux.org/index.php/PulseAudio#Clients_alter_master_output_volume_.28a.k.a._volume_jumps_to_100.25_after_running_application.29
+    QSound *receivedMessageSound;
+    QSound *sentMessageSound;
+    QSound *disconnectedSound;
+    QSound *connectedSound;
 
 
     unsigned char strangerTypingMask; //00 - no one typing, f0 - first typing, 0f - second typing, ff - both typing

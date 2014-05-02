@@ -1,14 +1,17 @@
 <RCC>
     <qresource prefix="/resources">
         <file>stylesheet.qss</file>
-        <file>connected.wav</file>
-        <file>disconnected.wav</file>
-        <file>received_message.wav</file>
-        <file>sent_message.wav</file>
         <file>stylesheet_bright.qss</file>
-        <file>shuffle.wav</file>
-        <file>phone_disc.wav</file>
-        <file>phone_pickup.wav</file>
         <file>icon/RunningIcon.png</file>
+        <file>sounds/click1.wav</file>
+        <file>sounds/click2.wav</file>
+        <file>sounds/click3.wav</file>
+        <file>sounds/click4.wav</file>
+        <file>sounds/click5.wav</file>
+        <file>sounds/click6.wav</file>
+        <file>sounds/click7.wav</file>
+        <file>sounds/click8.wav</file>
+        <file>sounds/shuffle.wav</file>
+        <file>sounds/phone_disc.wav</file>
     </qresource>
 </RCC>

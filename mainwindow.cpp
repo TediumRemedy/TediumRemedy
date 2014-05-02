@@ -168,10 +168,10 @@ MainWindow::MainWindow(QWidget *parent) :
     sentMessageSound = NULL;
     connectedSound = NULL;
     disconnectedSound = NULL;
-    //receivedMessageSound = new WavFile(":/resources/shuffle.wav", this);
-    //sentMessageSound = new WavFile(":/resources/test.wav", this);
-    //connectedSound = new WavFile(":/resources/phone_pickup.wav", this);
-    //disconnectedSound = new WavFile(":/resources/phone_disc.wav", this);
+    receivedMessageSound = new QSound(":/resources/sounds/shuffle.wav", this);
+    //sentMessageSound = new QSound(":/resources/sounds/test.wav", this);
+    connectedSound = new QSound(":/resources/sounds/click3.wav", this);
+    disconnectedSound = new QSound(":/resources/sounds/phone_disc.wav", this);
 
     //receivedMessageSound->setObjectName();
 
@@ -273,10 +273,10 @@ void MainWindow::WaitingForStranger() {
 
 void MainWindow::displayStrangerPreferencesWindow()
 {
-    if(chatMode == Regular) {
-        strangerPrefsWindow->setParentCenterCoordinates(geometry().center());
-        strangerPrefsWindow->show();
-    }
+    //if(chatMode == Regular) {
+    strangerPrefsWindow->setParentCenterCoordinates(geometry().center());
+    strangerPrefsWindow->show();
+    //}
 }
 
 void MainWindow::SwitchMode() {
