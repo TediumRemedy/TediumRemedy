@@ -12,7 +12,7 @@ TARGET = TediumRemedy
 TEMPLATE = app
 
 RC_ICONS = icon/TediumRemedy.ico
-#ICON = icon/TediumRemedy.icns
+ICON = icon/TediumRemedy.icns
 
 SOURCES += main.cpp\
         mainwindow.cpp \

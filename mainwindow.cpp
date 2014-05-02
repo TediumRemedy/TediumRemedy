@@ -372,14 +372,14 @@ void MainWindow::escapePressed() {
 
 void MainWindow::ReceivedMessage(const QString &messageText) {
     ui->chatlogBox->append(QString("<font color='")+StrangerColor+"'><b>Stranger: </b></font>"+messageText);
-    if(receivedMessageSound)
+    if(receivedMessageSound && ShouldPlaySound())
         receivedMessageSound->play();
 
     typingLabel->setText("");
 }
 
 void MainWindow::StrangerDisconnected() {
-    if(disconnectedSound)
+    if(disconnectedSound && ShouldPlaySound())
         disconnectedSound->play();
     ui->chatlogBox->append(QString("<font color='")+SysMsgColor+"'>Stranger disconnected</font>");
 }
@@ -387,7 +387,7 @@ void MainWindow::StrangerDisconnected() {
 void MainWindow::StrangerConnected() {
     ui->chatlogBox->clear();
 
-    if(connectedSound)
+    if(connectedSound && ShouldPlaySound())
         connectedSound->play();
 
     ui->chatlogBox->append(QString("<font color='")+SysMsgColor+"'>Stranger connected</font>");
@@ -397,7 +397,7 @@ void MainWindow::StrangerConnected() {
 void MainWindow::StrangerConnected(QStringList interests, bool languageMatch) {
     ui->chatlogBox->clear();
 
-    if(connectedSound)
+    if(connectedSound && ShouldPlaySound())
         connectedSound->play();
 
     if(languageMatch) {
@@ -519,3 +519,10 @@ void MainWindow::SpymodeStrangerStopsTyping(const QString &strangerID) {
     //ui->chatlogBox->append("Stranger stopped typing");
 }
 
+bool MainWindow::ShouldPlaySound() {
+    if(this->isActiveWindow()) {
+        return false;
+    } else {
+        return true;
+    }
+}

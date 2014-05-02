@@ -39,6 +39,7 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
+    bool ShouldPlaySound();
 private:
     Ui::MainWindow *ui;
 
