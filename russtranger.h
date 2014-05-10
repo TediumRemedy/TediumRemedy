@@ -27,6 +27,8 @@ public:
 private:
     int waitOpponentPollCounter;
 
+    bool chatIsGoingOn;
+
     enum RequestType {ErroneousType, RequestChatKey, RequestUid, RequestWaitOpponent, RequestSetReady, RequestGetIdentifier, RequestSendAction};
 
     QString chatKey;

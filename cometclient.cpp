@@ -61,7 +61,7 @@ void CometClient::postSynchronously(const QString &requestUrlString, const QStri
         timer.stop();
     } else {
         qDebug() << "postSynchronously() timeout occured";
-        reply->abort();
+        //reply->abort();
     }
 }
 

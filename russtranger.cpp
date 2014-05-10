@@ -140,6 +140,7 @@ void RusStranger::StartConversation() {
     cid="";
     rpId="";
     chatKey="";
+    chatIsGoingOn = false;
 
     this->requestChatKey();
     this->requestUid();
@@ -200,10 +201,14 @@ void RusStranger::requestUid() {
 }
 
 void RusStranger::waitOpponentPoll() {
-    if(!cid.isEmpty()) {
-        qDebug() << "waitOpponentPoll: cid is not empty, stop polling!";
+    if(chatIsGoingOn) {
+        qDebug() << "waitOpponentPoll: chatIsGoingOn==true, stop polling!";
         return;
     }
+    /*if(!cid.isEmpty()) {
+        qDebug() << "waitOpponentPoll: cid is not empty, stop polling!";
+        return;
+    }*/
 
     waitOpponentPollCounter++;
 
@@ -282,10 +287,12 @@ void RusStranger::requestFinished(int requestIdentifier, const QString &response
     } else if(requestType == RusStranger::RequestWaitOpponent) {
         qDebug() << "Got wait opponent response: " << replyText;
 
-        if(cid.isEmpty()) {
+        //if(cid.isEmpty()) {
+        if(!chatIsGoingOn) {
             QTimer::singleShot(1000, this, SLOT(waitOpponentTimerHandler()));
         } else { //got cid, stop "waiting opponent", time to /send and /ping
-            qDebug() << "We have cid now: " << cid;
+            qDebug() << "Chat is already going on (we got start_chat somewhere). Stop polling";
+            //qDebug() << "We have cid now: " << cid;
         }
 
     } else if(requestType == RusStranger::RequestGetIdentifier) {
@@ -309,7 +316,6 @@ void RusStranger::requestFinished(int requestIdentifier, const QString &response
         }
 
         if(document.isArray() && document.array()[0].isObject() && document.array()[0].toObject().find("data")!=document.array()[0].toObject().end()) {
-            //qDebug() << "\"data\" field present";
             QJsonValueRef actionValue = document.array()[0].toObject()["data"].toObject()["action"];
             QString actionString = actionValue.toString();
 
@@ -322,6 +328,7 @@ void RusStranger::requestFinished(int requestIdentifier, const QString &response
                 }
             } else if(actionString == "start_chat") {
                 qDebug() << "This is start_chat";
+                chatIsGoingOn = true;
                 emit ConversationStarted();
             } else if(actionString == "start_typing") {
                 qDebug() << "This is start_typing";
@@ -338,6 +345,7 @@ void RusStranger::requestFinished(int requestIdentifier, const QString &response
                     emit ReceivedMessage(decodeUnicode(messageString));
                 }
             } else if(actionString == "stop_chat") {
+                chatIsGoingOn = false;
                 QString messageSender = document.array()[0].toObject()["data"].toObject()["user"].toString();
                 if(messageSender == "stranger") {
                     qDebug() << "Stranger disconnected";
@@ -354,7 +362,6 @@ void RusStranger::requestFinished(int requestIdentifier, const QString &response
         }
     } else if(requestType == RusStranger::RequestSetReady) {
         qDebug () << "set_ready has been sent, got response: " << replyText;
-        //getIdentifier();
     } else if(requestType == RusStranger::RequestSendAction) {
         qDebug() << "action sent: " << replyText;
     } else {
