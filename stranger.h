@@ -44,6 +44,8 @@ private:
     void pollNewEvents();
     bool processEvent(QJsonArray eventArray); //returns false if the conversation has ended
 
+    void processRecaptcha(QString recaptchaKey);
+
     QString clientID;
 
 protected:

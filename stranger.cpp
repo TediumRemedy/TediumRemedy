@@ -122,6 +122,11 @@ bool Stranger::processEvent(QJsonArray eventArray) {
         emit SystemMessage(QString("Banned, going to unmonitored section"));
         qDebug() << "We are banned, going to unmonitored";
         this->StartConversation("en", "", false, true);
+    } else if(eventName == "recaptchaRequired") {
+        const QString recaptchaCode = eventArray[0].toArray()[1].toString();
+        qDebug() << "Recaptcha required with code " << recaptchaCode;
+        emit SystemMessage(QString("Captcha verification required"));
+        this->processRecaptcha(recaptchaCode);
     } else {
         //search for "connected" event
         bool isConnectedEvent = false;
@@ -170,4 +175,17 @@ bool Stranger::processEvent(QJsonArray eventArray) {
 
     }
     return true;
+}
+
+void Stranger::processRecaptcha(QString recaptchaKey) {
+    // > GET google.com/recaptcha/api/challenge?k=<RECAPTCHA KEY>
+    // < text/javascript, var RecaptchaState = {challenge : '<...>', timeout: 1800, ...} document.write('..');
+    // > GET google.com/recaptcha/api/reload?c=<...>
+    // < text/javascript, Recaptcha.finish_reload('<...>');
+    // > POST front5.omegle.com/recaptcha
+    //    challenge=<...>&response=<ANSWER HERE>&id=<URL ENCODED CONVO ID>
+    // < text/plain win
+
+
+    //and we should get "connected event" for the POST /events that had previously been submitted
 }

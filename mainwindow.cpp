@@ -231,7 +231,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
 
 
-    chatMode = Russian;
+    //chatMode = Russian;
+    chatMode = AnsweringQuestions;
     SwitchMode(); //switch it to regular
 
     this->escapePressed();
